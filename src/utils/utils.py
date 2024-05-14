@@ -8,8 +8,10 @@ matplotlib.use('TkAgg')  # or 'Qt5Agg' or any other backend that supports intera
 # by default backend: FigureCanvasAgg
 
 import os
+import nilearn as nl
 import nibabel as nib
 import matplotlib.pyplot as plt
+import nilearn.plotting as nlplt
 
 from skimage.util import montage
 from skimage.transform import rotate
@@ -81,4 +83,78 @@ def createMontage(trainset_path:str, image_name:str) -> None:
     ax1.imshow(rotate(montage(any_image[:,:,:]), 90, resize=True)) # create montage with 90 degree rotated images
     ax1.set_title(image_name) # set title of a figure
 
+    plt.show() # display the plot
+
+def plotAnatomicalImage(trainset_path:str,image_name:str) -> None:
+    """
+    This function is used to create anatomical plot of an input image.
+
+    Parameters:
+    - trainset_path (str): training directory path
+    - image_name (str): name of the image exists in training directory
+
+    Returns:
+    - (None)
+    """
+
+    image = nl.image.load_img(os.path.join(trainset_path,image_name)) # load only image which belongs to given set: {flair, t1, t1ce, t2}
+
+    fig, ax = plt.subplots(nrows=1,figsize=(30,40)) # create figure with 1 row and 30*40 figure size
+    nlplt.plot_anat(image, title=f'Anatomical Plot: {image_name}',axes=ax)
+    plt.show() # display the plot
+
+def plotEchoPlanarImage(trainset_path:str,image_name:str) -> None:
+    """
+    This function is used to create echo-planar plot of an input image.
+
+    Parameters:
+    - trainset_path (str): training directory path
+    - image_name (str): name of the image exists in training directory
+
+    Returns:
+    - (None)
+    """
+
+    image = nl.image.load_img(os.path.join(trainset_path,image_name)) # load only image which belongs to given set: {flair, t1, t1ce, t2}
+
+    fig, ax = plt.subplots(nrows=1,figsize=(30,40)) # create figure with 1 row and 30*40 figure size
+    nlplt.plot_epi(image, title=f'Echo-Planar Plot: {image_name}',axes=ax)
+    plt.show() # display the plot
+
+def plotNormalImage(trainset_path:str,image_name:str) -> None:
+    """
+    This function is used to create normal plot of an input image.
+
+    Parameters:
+    - trainset_path (str): training directory path
+    - image_name (str): name of the image exists in training directory
+
+    Returns:
+    - (None)
+    """
+
+    image = nl.image.load_img(os.path.join(trainset_path,image_name)) # load only image which belongs to given set: {flair, t1, t1ce, t2}
+
+    fig, ax = plt.subplots(nrows=1,figsize=(30,40)) # create figure with 1 row and 30*40 figure size
+    nlplt.plot_img(image, title=f'Normal Plot: {image_name}',axes=ax)
+    plt.show() # display the plot
+
+def plotImageWithROI(trainset_path:str,image_name:str, mask_name:str) -> None:
+    """
+    This function is used to create normal plot of an input image.
+
+    Parameters:
+    - trainset_path (str): training directory path
+    - image_name (str): name of the image exists in training directory
+    - mask_name (str): name of the image (mask/seg) exists in training directory
+
+    Returns:
+    - (None)
+    """
+
+    image = nl.image.load_img(os.path.join(trainset_path,image_name)) # load only image which belongs to given set: {flair, t1, t1ce, t2}
+    mask = nl.image.load_img(os.path.join(trainset_path,mask_name)) # load the only mask/seg image
+
+    fig, ax = plt.subplots(nrows=1,figsize=(30,40)) # create figure with 1 row and 30*40 figure size
+    nlplt.plot_roi(mask, bg_img=image, title=f'Image with Region of Interest: {image_name}',axes=ax)
     plt.show() # display the plot
