@@ -1,3 +1,5 @@
 torch
 wandb
+nilearn
 torchvision
+https://github.com/miykael/gif_your_nifti
