@@ -11,6 +11,9 @@ import os
 import nibabel as nib
 import matplotlib.pyplot as plt
 
+from skimage.util import montage
+from skimage.transform import rotate
+
 def showAllTypesOfImages(trainset_path:str, image_name:list) -> None:
     """
     This function is used to visualize the all types of fmri images.
@@ -30,11 +33,12 @@ def showAllTypesOfImages(trainset_path:str, image_name:list) -> None:
     image_t2 = nib.load(os.path.join(trainset_path,image_name[3])).get_fdata() # load t2 type image data
     image_mask = nib.load(os.path.join(trainset_path,image_name[4])).get_fdata() # load mask type image data
 
-    print("Shape of a flair image: {}".format(image_flair.shape))  # shape of the flair image
-    print("Shape of a T1 image: {}".format(image_t1.shape)) # shape of the T1 image
-    print("Shape of a T1CE image: {}".format(image_t1ce.shape)) # shape of the T1CE image
-    print("Shape of a T2 image: {}".format(image_t2.shape)) # shape of the T2 image
-    print("Shape of a Mask image: {}".format(image_mask.shape)) # shape of the Mask image
+    print("from showAllTypesOfImages() function:")
+    print("- Shape of a flair image: {}".format(image_flair.shape))  # shape of the flair image
+    print("- Shape of a T1 image: {}".format(image_t1.shape)) # shape of the T1 image
+    print("- Shape of a T1CE image: {}".format(image_t1ce.shape)) # shape of the T1CE image
+    print("- Shape of a T2 image: {}".format(image_t2.shape)) # shape of the T2 image
+    print("- Shape of a Mask image: {}".format(image_mask.shape)) # shape of the Mask image
 
     fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(1, 5, figsize=(20,10)) # create figure contains 1 row 5 columns with 20*10 size of all figures.
 
@@ -56,3 +60,25 @@ def showAllTypesOfImages(trainset_path:str, image_name:list) -> None:
     ax5.set_title('Mask Image') # set title of a figure
 
     plt.show() # display the plots
+
+def createMontage(trainset_path:str, image_name:str) -> None:
+    """
+    This function is used to create montage of a nifti image.
+
+    Parameters:
+    - trainset_path (str): training directory path
+    - image_name (str): name of the image exists in training directory
+
+    Returns:
+    - (None)
+    """
+
+    any_image = nib.load(os.path.join(trainset_path,image_name)).get_fdata()
+    print("from createMontage() function:")
+    print("- Shape of a image: {}".format(any_image.shape))  # shape of the image
+
+    fig, ax1= plt.subplots(1, 1, figsize=(15,15)) # create a figure contains 1 row 1 column with 15*15 size of all figures
+    ax1.imshow(rotate(montage(any_image[:,:,:]), 90, resize=True)) # create montage with 90 degree rotated images
+    ax1.set_title(image_name) # set title of a figure
+
+    plt.show() # display the plot
