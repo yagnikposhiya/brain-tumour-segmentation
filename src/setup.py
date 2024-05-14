@@ -17,7 +17,9 @@ setup(
     install_requires=[
         'torch',
         'wandb',
-        'torchvision'
+        'nilearn',
+        'torchvision',
+        'https://github.com/miykael/gif_your_nifti'
     ], # list of dependencies required by the package
     classifiers=[
         'Programming Language :: Python :: 3.12.3'
