@@ -8,11 +8,13 @@ matplotlib.use('TkAgg')  # or 'Qt5Agg' or any other backend that supports intera
 # by default backend: FigureCanvasAgg
 
 import os
+import numpy as np
 import nilearn as nl
 import nibabel as nib
 import matplotlib.pyplot as plt
 import nilearn.plotting as nlplt
 
+from scipy.stats import norm
 from skimage.util import montage
 from skimage.transform import rotate
 
@@ -157,4 +159,67 @@ def plotImageWithROI(trainset_path:str,image_name:str, mask_name:str) -> None:
 
     fig, ax = plt.subplots(nrows=1,figsize=(30,40)) # create figure with 1 row and 30*40 figure size
     nlplt.plot_roi(mask, bg_img=image, title=f'Image with Region of Interest: {image_name}',axes=ax)
+    plt.show() # display the plot
+
+def Z_Score_Normalization(trainset_path:str,image_name:str) -> None:
+    """
+    This function is used to calculate z-score normalization of an input image.
+
+    Parameters:
+    - trainset_path (str): training directory path
+    - image_name (str): name of the image exists in training directory
+
+    Returns:
+    - (None)
+    """
+
+    image_data = nib.load(os.path.join(trainset_path,image_name)).get_fdata() # load an input image
+    selected_image_data = image_data[:,:,95] # select specific channel i.e. 95th channel out of 155 channels
+
+    voxel_values = selected_image_data.ravel() # reshape data to 1D array
+    mean = np.mean(voxel_values) # calculate mean
+    std_deviation = np.std(voxel_values) # calculate standard deviation
+
+    normalized_data = (selected_image_data - mean)/std_deviation # apply z-score normalization
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20,10)) # create figure contains 1 row 2 columns with 20*10 figure size
+
+    ax1.imshow(selected_image_data,cmap='gray') # visualize an input image before applying z-score normalization
+    ax1.set_title(f'Before applying z-score normalization \n {image_name}') # set figure title
+    ax2.imshow(normalized_data, cmap='gray') # visualize an input image after applying z-score normalization
+    ax2.set_title(f'After applying z-score normalization \n {image_name}') # set figure title
+    plt.show() # display the plots
+
+    # PLOTING HISTOGRAM FOR CHECKING DISTRIBUTION OF DATA BEFORE Z-SCORE NOMALIZATION
+    """
+    EXPLANATION:
+    This plot provides a visual comparison b/w the histogram of voxel intensity values and the PDF (Probability Density Function)
+    of the fitted normal distribution, helping to assess how well the voxel intensity values follow a normal distribution. If the 
+    PDF curve closely matches the shape of the histogram, it suggests that the voxel intensity values are approximately normaly
+    distributed.
+    """
+    plt.hist(voxel_values, bins=50, density=True, alpha=0.5, color='b', label='Histogram') # plot the histogram of voxel intensity values
+    mu, std = norm.fit(voxel_values)
+    xmin, xmax = plt.xlim() # retrieve min and max values of x-axis
+    x = np.linspace(xmin, xmax, 57600) # generate 57600 (240*240) values b/w min and max values 
+    p = norm.pdf(x, mu, std)
+    plt.plot(x, p, 'k', linewidth=2) # plot the line with color black and width 2
+
+    plt.xlabel("Voxel Intensity") # set xlabel
+    plt.ylabel("Probability Density") # set ylabel
+    plt.title(f"Normal Distribution of Voxel Intensity Values Before Z-score Normalization \n {image_name}") # set figure title
+    plt.show() # display the plot
+
+    # PLOTING HISTOGRAM FOR CHECKING DISTRIBUTION OF DATA AFTER Z-SCORE NOMALIZATION
+    selected_normalized_data = normalized_data.ravel() # select 95th slice and reshape data to 1D array
+    plt.hist(selected_normalized_data, bins=50, density=True, alpha=0.5, color='b', label='Histogram') # plot the histogram of normalized intensity values
+    mu, std = norm.fit(voxel_values)
+    xmin, xmax = plt.xlim() # retrieve min and max values of x-axis
+    x = np.linspace(xmin, xmax, 57600) # generate 57600 (240*240) values b/w min and max values 
+    p = norm.pdf(x, mu, std)
+    plt.plot(x, p, 'k', linewidth=2) # plot the line with color black and width 2
+
+    plt.xlabel("Voxel Intensity") # set xlabel
+    plt.ylabel("Probability Density") # set ylabel
+    plt.title(f"Normal Distribution of Voxel Intensity Values After Z-score Normalization \n {image_name}") # set figure title
     plt.show() # display the plot
