@@ -223,3 +223,44 @@ def Z_Score_Normalization(trainset_path:str,image_name:str) -> None:
     plt.ylabel("Probability Density") # set ylabel
     plt.title(f"Normal Distribution of Voxel Intensity Values After Z-score Normalization \n {image_name}") # set figure title
     plt.show() # display the plot
+
+def flipImageHorizontally(trainset_path:str,image_name:str,mask_name:str) -> None:
+    """
+    This function is used to apply data augmentation modality i.e. Horizontal Flipping
+
+    Parameters:
+    - trainset_path (str): training directory path
+    - image_name (str): name of the image exists in training directory
+    - mask_name (str): name of the image (mask/seg) exists in training directory
+
+    Returns:
+    - (None)
+    """
+
+    bg_img = nib.load(os.path.join(trainset_path,image_name)).get_fdata() # load an image of type flair, t1, t1ce, t2 only
+    mask_img = nib.load(os.path.join(trainset_path,mask_name)).get_fdata() # load an image of type mask/seg only
+
+    flipped_horizontal_bg_img = np.flip(bg_img, axis=0) # flip alongside the first axis (vertical axis)
+    flipped_horizontal_mask_img = np.flip(mask_img, axis=0) # flip alongside the first axis (vertical axis)
+
+    fig, ((ax1, ax2),(ax3, ax4)) = plt.subplots(nrows=2, ncols=2, figsize=(20,20)) # create a figure contains 2 rows and 2 cols with 20*20 each figure size
+    
+    # PLOT ORIGINAL BACKGROUND IMAGE
+    ax1.imshow(bg_img[:,:,95]) # visualize flair, t1, t1ce, t2 images only
+    ax1.set_title(f'Image before applying horizontal flip \n {image_name}') # set title for figure
+
+    # PLOT FLIPPED BACKGROUND IMAGE
+    ax2.imshow(flipped_horizontal_bg_img[:,:,95]) # visualize flair, t1, t1ce, t2 images only after applying flipping
+    ax2.set_title(f'Image after applying horizontal flip \n {image_name}') # set title for figure
+
+    plt.subplots_adjust(hspace=0.5) # add white spce between two rows
+
+    # PLOT ORIGINAL MASK IMAGE
+    ax3.imshow(mask_img[:,:,95]) # visualize mask/seg image only
+    ax3.set_title(f'Mask/Seg Image before applying horizontal flip \n {image_name}') # set title for figure
+
+    # PLOT FLIPPED MASK IMAGE
+    ax4.imshow(flipped_horizontal_mask_img[:,:,95]) # visualize mask/seg image only
+    ax4.set_title(f'Mask/Seg Image before applying horizontal flip \n {image_name}') # set title for figure
+
+    plt.show() # display the plots
