@@ -38,11 +38,11 @@ def showAllTypesOfImages(trainset_path:str, image_name:list) -> None:
     image_mask = nib.load(os.path.join(trainset_path,image_name[4])).get_fdata() # load mask type image data
 
     print("from showAllTypesOfImages() function:")
-    print("- Shape of a flair image: {}".format(image_flair.shape))  # shape of the flair image
-    print("- Shape of a T1 image: {}".format(image_t1.shape)) # shape of the T1 image
-    print("- Shape of a T1CE image: {}".format(image_t1ce.shape)) # shape of the T1CE image
-    print("- Shape of a T2 image: {}".format(image_t2.shape)) # shape of the T2 image
-    print("- Shape of a Mask image: {}".format(image_mask.shape)) # shape of the Mask image
+    print("-- Shape of a flair image: {}".format(image_flair.shape))  # shape of the flair image
+    print("-- Shape of a T1 image: {}".format(image_t1.shape)) # shape of the T1 image
+    print("-- Shape of a T1CE image: {}".format(image_t1ce.shape)) # shape of the T1CE image
+    print("-- Shape of a T2 image: {}".format(image_t2.shape)) # shape of the T2 image
+    print("-- Shape of a Mask image: {}".format(image_mask.shape)) # shape of the Mask image
 
     fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(1, 5, figsize=(20,10)) # create figure contains 1 row 5 columns with 20*10 size of all figures.
 
@@ -79,10 +79,10 @@ def createMontage(trainset_path:str, image_name:str) -> None:
 
     any_image = nib.load(os.path.join(trainset_path,image_name)).get_fdata()
     print("from createMontage() function:")
-    print("- Shape of a image: {}".format(any_image.shape))  # shape of the image
+    print("-- Shape of a image: {}".format(any_image.shape))  # shape of the image
 
     fig, ax1= plt.subplots(1, 1, figsize=(15,15)) # create a figure contains 1 row 1 column with 15*15 size of all figures
-    ax1.imshow(rotate(montage(any_image[:,:,:]), 90, resize=True)) # create montage with 90 degree rotated images
+    ax1.imshow(rotate(montage(any_image[50:-50,:,:]), 90, resize=True)) # create montage with 90 degree rotated images
     ax1.set_title(image_name) # set title of a figure
 
     plt.show() # display the plot
@@ -161,7 +161,7 @@ def plotImageWithROI(trainset_path:str,image_name:str, mask_name:str) -> None:
     nlplt.plot_roi(mask, bg_img=image, title=f'Image with Region of Interest: {image_name}',axes=ax)
     plt.show() # display the plot
 
-def Z_Score_Normalization(trainset_path:str,image_name:str) -> None:
+def Z_Score_Normalization_forSingleSlice(trainset_path:str,image_name:str) -> None:
     """
     This function is used to calculate z-score normalization of an input image.
 
@@ -174,7 +174,7 @@ def Z_Score_Normalization(trainset_path:str,image_name:str) -> None:
     """
 
     image_data = nib.load(os.path.join(trainset_path,image_name)).get_fdata() # load an input image
-    selected_image_data = image_data[:,:,95] # select specific channel i.e. 95th channel out of 155 channels
+    selected_image_data = image_data[:,:,95] # select specific channel i.e. 95th slice out of 155 slices
 
     voxel_values = selected_image_data.ravel() # reshape data to 1D array
     mean = np.mean(voxel_values) # calculate mean
@@ -303,5 +303,94 @@ def flipImageVertically(trainset_path:str,image_name:str,mask_name:str) -> None:
     # PLOT FLIPPED MASK IMAGE
     ax4.imshow(flipped_vertical_mask_img[:,:,95]) # visualize mask/seg image only after appklying flipping
     ax4.set_title(f'Mask/Seg Image after applying vertical flip \n {image_name}') # set title for figure
+
+    plt.show() # display the plots
+
+def Z_Score_Normalization_forImage(trainset_path:str,image_name:str) -> np.ndarray:
+    """
+    This function is used to calculate z-score normalization of an input image.
+
+    Parameters:
+    - trainset_path (str): training directory path
+    - image_name (str): name of the image exists in training directory
+
+    Returns:
+    - (np.ndarray): normalized image array of shape (240,240,155)
+    """
+
+    image_data = nib.load(os.path.join(trainset_path,image_name)).get_fdata() # load an input image
+    mean = np.mean(image_data, axis=(0,1,2)) # calculate mean; axis are 0,1,2 because image array shape is (240,240,155)
+    std_deviation = np.std(image_data, axis=(0,1,2)) # calculate standard deviation; axis are 0,1,2 because image array shape is (240,240,155)
+    normalized_data = (image_data - mean)/std_deviation # apply z-score normalization
+    # print("- Max value before Z-Score Normalization: {}".format(image_data.max())) # maximum value in image array before applying z-score normalization
+    # print("- Max value before Z-Score Normalization: {}".format(normalized_data.max())) # maximum value in image array after applying z-score normalization
+
+    return normalized_data # shape (240,240,155)
+
+def Z_Score_Normalization(image:np.ndarray) -> np.ndarray:
+    """
+    This function is used to calculate z-score normalization of an input image.
+
+    Parameters:
+    - image (np.ndarray): n-dimensional numpy array of an image
+
+    Returns:
+    - (np.ndarray): normalized image array of shape (240,240,155)
+    """
+
+    mean = np.mean(image, axis=(0,1,2)) # calculate mean; axis are 0,1,2 because image array shape is (240,240,155)
+    std_deviation = np.std(image, axis=(0,1,2)) # calculate standard deviation; axis are 0,1,2 because image array shape is (240,240,155)
+    normalized_data = (image - mean)/std_deviation # apply z-score normalization
+    # print("- Max value before Z-Score Normalization: {}".format(image_data.max())) # maximum value in image array before applying z-score normalization
+    # print("- Max value before Z-Score Normalization: {}".format(normalized_data.max())) # maximum value in image array after applying z-score normalization
+
+    return normalized_data # shape (240,240,155)
+
+def croppedImagePlot(image:np.ndarray,mask:np.ndarray, trainset_path:str, image_names: list) -> None:
+    """
+    This function is used to plot flair, t1ce, and t2 images after cropping and before cropping.
+
+    Parameters:
+    - image (np.ndarray): stacked image contains flair, t1ce, and t2 type images
+    - mask (np.ndarray): mask image contains only mask/seg region of tumour
+    - trainset_path (str): training directory path
+    - image_names (list): list of names of the images exist in training directory
+
+    Returns:
+    - (None)
+    """
+
+    flair_image = nib.load(os.path.join(trainset_path,image_names[0])).get_fdata() # load flair image
+    t1ce_image = nib.load(os.path.join(trainset_path,image_names[2])).get_fdata() # load t1ce image
+    t2_image = nib.load(os.path.join(trainset_path,image_names[3])).get_fdata() # load t2 image
+    mask_image = nib.load(os.path.join(trainset_path,image_names[-1])).get_fdata() # load mask image
+
+    fig, ((ax1,ax2,ax3,ax4),(ax5,ax6,ax7,ax8)) = plt.subplots(nrows=2, ncols=4, figsize=(20,20)) # create a figure canvas with 2 rows and 4 cols with 20*20 figure size each
+
+    ax1.imshow(flair_image[:,:,95]) # visualize normal flair image
+    ax1.set_title("Normal flair image") # set figure title
+
+    ax2.imshow(t1ce_image[:,:,95]) # visualize normal t1ce image
+    ax2.set_title("Normal t1ce image") # set figure title
+
+    ax3.imshow(t2_image[:,:,95]) # visualize normal t2 image
+    ax3.set_title("Normal t2 image") # set figure title
+
+    ax4.imshow(mask_image[:,:,95]) # visualize normal mask image
+    ax4.set_title("Normal mask image") # set figure title
+
+    plt.subplots_adjust(hspace=0.5) # add white space between two rows
+
+    ax5.imshow(image[:,:,82,0]) # visualize cropped flair image
+    ax5.set_title("Cropped flair image") # set figure title
+
+    ax6.imshow(image[:,:,82,1]) # visualize cropped t1ce image
+    ax6.set_title("Cropped t1ce image") # set figure title
+
+    ax7.imshow(image[:,:,82,2]) # visualize cropped t2 image
+    ax7.set_title("Cropped t2 image") # set figure title
+
+    ax8.imshow(mask[:,:,82]) # visualize cropped mask image
+    ax8.set_title("Cropped mask image") # set figure title
 
     plt.show() # display the plots
