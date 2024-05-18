@@ -5,14 +5,20 @@ organization: NEUROWORK Research Labs
 """
 
 import os
+import torch
 import numpy as np
 import nibabel as nib
+import pytorch_lightning as pl
 
 from config import Config
+from nn_arch.unet import UNet
 from brats2020 import prepareDataset
+from brats2020 import SegmentationDataModule
 from utils.utils import showAllTypesOfImages
 from gpu_config.check import check_gpu_config
 from utils.utils import Z_Score_Normalization_forImage, croppedImagePlot
+
+
 
 if __name__=='__main__':
 
@@ -70,6 +76,22 @@ if __name__=='__main__':
     print("--- FOR MULTIPLE DIRECTORIES: IMAGE PROCESSING ---")
 
     print("Preparing dataset...")
-    dir_path = prepareDataset(config.TRAINSET_PATH) # prepare dataset and stored it into .npy format
-    print("Dataset is prepared and stored into .npy format at: \n{}".format(dir_path))
+    print("Preparing trainset...")
+    dir_path = prepareDataset(config.TRAINSET_PATH,"train") # prepare dataset and stored it into .npy format
+    print("Trainset is prepared and stored into .npy format at: \n{}".format(dir_path))
 
+    # Here validation set does not contain any mask images so not transforming it into .npy
+    # print("Preparing validation set...")
+    # dir_path = prepareDataset(config.VALIDSET_PATH,"valid") # prepare dataset and stored it into .npy format
+    # print("Validationset is prepared and stored into .npy format at: \n{}".format(dir_path))
+    print("Dataset is prepared.")
+
+    config.TRAIN_IMAGES_DIR = os.path.join(dir_path,'images') # set path for directory where images are stored into .npy format
+    config.TRAIN_MASKS_DIR = os.path.join(dir_path,'masks') # set path for directory where mask images are stored into .npy format
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') # set device for model training
+    data_module = SegmentationDataModule(config.TRAIN_IMAGES_DIR,config.TRAIN_MASKS_DIR,config.VAL_IMAGES_DIR,config.VAL_MASKS_DIR,config.BATCH_SIZE) # initialize the data module
+    model = UNet(num_classes=config.NUM_CLASSES) # create a normal standard unet model
+    model = model.to(device) # move model architecture to available computing device
+    trainer = pl.Trainer(max_epochs=config.MAX_EPOCHS, log_every_n_steps=1) # set the maxium number of epochs; saving a training logs at every step
+    trainer.fit(model,data_module) # train the normal standard unet model
