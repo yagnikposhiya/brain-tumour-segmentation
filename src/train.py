@@ -5,6 +5,7 @@ organization: NEUROWORK Research Labs
 """
 
 import os
+import wandb
 import torch
 import numpy as np
 import nibabel as nib
@@ -16,6 +17,7 @@ from brats2020 import prepareDataset
 from brats2020 import SegmentationDataModule
 from utils.utils import showAllTypesOfImages
 from gpu_config.check import check_gpu_config
+from pytorch_lightning.loggers import WandbLogger
 from utils.utils import Z_Score_Normalization_forImage, croppedImagePlot
 
 
@@ -25,6 +27,12 @@ if __name__=='__main__':
     check_gpu_config() # check whether GPUs are available locally
 
     config = Config() # create an instance of class Config
+
+    wandb.init(entity=config.ENTITY,
+               project=config.PROJECT,
+               anonymous=config.ANONYMOUS,
+               group=config.GROUP[0],
+               reinit=config.REINIT) # initialize the weights and biases cloud server instance
 
     # SINGLE DIRECTORY: IMAGE PREPROCESSING
 
@@ -93,5 +101,11 @@ if __name__=='__main__':
     data_module = SegmentationDataModule(config.TRAIN_IMAGES_DIR,config.TRAIN_MASKS_DIR,config.VAL_IMAGES_DIR,config.VAL_MASKS_DIR,config.BATCH_SIZE) # initialize the data module
     model = UNet(num_classes=config.NUM_CLASSES) # create a normal standard unet model
     model = model.to(device) # move model architecture to available computing device
-    trainer = pl.Trainer(max_epochs=config.MAX_EPOCHS, log_every_n_steps=1) # set the maxium number of epochs; saving a training logs at every step
+    wandb_logger = WandbLogger(log_model=config.LOG_MODEL)
+    trainer = pl.Trainer(max_epochs=config.MAX_EPOCHS, log_every_n_steps=1, logger=wandb_logger) # set the maxium number of epochs; saving a training logs at every step
+
+    print("Training started...")
     trainer.fit(model,data_module) # train the normal standard unet model
+    print("Training finished.")
+
+    wandb.finish() # close the weights and biases cloud instance
