@@ -98,7 +98,7 @@ if __name__=='__main__':
     config.TRAIN_MASKS_DIR = os.path.join(dir_path,'masks') # set path for directory where mask images are stored into .npy format
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') # set device for model training
-    data_module = SegmentationDataModule(config.TRAIN_IMAGES_DIR,config.TRAIN_MASKS_DIR,config.VAL_IMAGES_DIR,config.VAL_MASKS_DIR,config.BATCH_SIZE) # initialize the data module
+    data_module = SegmentationDataModule(config.TRAIN_IMAGES_DIR,config.TRAIN_MASKS_DIR,config.VAL_IMAGES_DIR,config.VAL_MASKS_DIR,config.BATCH_SIZE, transform=config.TRANSFORM) # initialize the data module
     model = UNet(num_classes=config.NUM_CLASSES) # create a normal standard unet model
     model = model.to(device) # move model architecture to available computing device
     wandb_logger = WandbLogger(log_model=config.LOG_MODEL)
