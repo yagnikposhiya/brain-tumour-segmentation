@@ -18,6 +18,7 @@ setup(
         'torch',
         'wandb',
         'nilearn',
+        'lightning'
         'torchvision',
         'https://github.com/miykael/gif_your_nifti'
     ], # list of dependencies required by the package
