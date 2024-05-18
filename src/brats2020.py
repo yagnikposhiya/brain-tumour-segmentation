@@ -12,6 +12,7 @@ import numpy as np
 import nibabel as nib
 import pytorch_lightning as pl
 
+from PIL import Image
 from typing import Any
 from utils.utils import Z_Score_Normalization
 from torch.utils.data import Dataset, DataLoader, random_split
@@ -133,7 +134,7 @@ def prepareDataset(path:str, directory:str) -> str:
     return f'{path}processed/{directory}' # path of directory where dataset is stored in .npy format
 
 class SegmentationDataset(Dataset):
-    def __init__(self, images_dir, masks_dir, transform=None) -> None:
+    def __init__(self, images_dir, masks_dir, transform=False) -> None:
         self.images_dir = images_dir # set path for directory contains input images in .npy format
         self.masks_dir = masks_dir # set path for directory contains masks in .npy format
         self.transform = transform # set boolen value for transform
@@ -147,8 +148,8 @@ class SegmentationDataset(Dataset):
         image_path = os.path.join(self.images_dir, self.image_files[index]) # generate path for a single image
         mask_path = os.path.join(self.masks_dir, self.masks_files[index]) # generate path for a single mask image
 
-        image = np.load(image_path) # load a image available in the .npy format
-        mask = np.load(mask_path) # load a mask image available in the .npy format
+        raw_image = np.load(image_path) # load a image available in the .npy format
+        raw_mask = np.load(mask_path) # load a mask image available in the .npy format
         """
         There is no need to do anything related to one-hot encoding for mask images. Once you have clarify the number of classes
         at the time of the model implementation then it will work in the segmentation task.
@@ -157,19 +158,42 @@ class SegmentationDataset(Dataset):
         # print("- Shape of the image stored into .npy format: {}".format(image.shape))
         # print("- Shape of the mask stored into .npy format: {}".format(mask.shape))
 
+        # tensors with negative strides are not currently supported that's why have to use PIL and then have to apply transformations
+        raw_image = Image.fromarray(raw_image).convert("L") # convert to PIL Images for transformations
+        raw_mask = Image.fromarray(raw_mask).convert("L") # convert to PIL Images for transformations
+
+        if self.transform:
+            random_int = torch.randint(0, 3, (1,)).item() # generate a random integer between 0-2
+            if random_int == 0:
+                image = raw_image # no augmentation techniques are applied
+                mask = raw_mask # no augmentation techniques are applied
+            elif random_int == 1:
+                image = np.flip(raw_image,axis=0) # flip alongside the first axis (vertical axis); horizontal flipping
+                mask = np.flip(raw_mask,axis=0) # flip alongside the first axis (vertical axis); horizontal flipping
+            elif random_int == 2:
+                image = np.flip(raw_image,axis=1) # flip alongside the first axis (horizontal axis); vertical flipping
+                mask = np.flip(raw_mask,axis=1) # flip alongside the first axis (horizontal axis); vertical flipping
+
+        # convert back to numpy arrays
+        image = np.array(image)
+        mask = np.array(mask)
+
+        # ensure no negative strides
+        """
+        In the context of arrays and tensors, a stride represents the number of elements to skip in memory 
+        to move to the next element along each dimension. Strides are crucial in understanding how multi-dimensional arrays 
+        are laid out in memory and how to navigate through them.
+        """
+        image = image.copy()
+        mask = mask.copy()
 
         image = torch.tensor(image, dtype=torch.float32).unsqueeze(0) # convert to torch tensors; .unsqueeze(0) used for add channel dimension
         mask = torch.tensor(mask, dtype=torch.long) # convert to torch tensors
 
-        if self.transform:
-            augmented = self.transform(image=image, mask=mask) # apply custom transformation
-            image = augmented['image'] # 
-            mask = augmented['mask'] # 
-
         return image, mask # return image and mask in the form of the tuple
 
 class SegmentationDataModule(pl.LightningDataModule):
-    def __init__(self, train_images_dir, train_masks_dir, val_images_dir, val_masks_dir, batch_size=32, transform=None, val_split=0.2, test_split=0.1) -> None:
+    def __init__(self, train_images_dir, train_masks_dir, val_images_dir, val_masks_dir, batch_size=32, transform=False, val_split=0.2, test_split=0.1) -> None:
         super().__init__()
         self.train_images_dir = train_images_dir # set path for directory contains input images for training
         self.train_masks_dir = train_masks_dir # set path for directory contains mask images for training
