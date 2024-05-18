@@ -84,9 +84,73 @@ class UNet(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         images, masks = batch # load input images and mask images from a single-single batch
         outputs = self(images) # calculate the prediction
+
+        """
+        EXPLANATION ON preds = torch.argmax(outputs, dim=1):
+        outputs: This tensor represents the raw predictions from the model. 
+        For multi-class segmentation, its shape is typically (N,C,H,W) where:
+
+        N is the batch size.
+        C is the number of classes.
+        H is the height of the image.
+        W is the width of the image.
+
+        torch.argmax(outputs, dim=1): This function finds the index of the maximum value along the specified dimension, 
+        which in this case is dim=1 (the class dimension). 
+        Essentially, for each pixel, it selects the class with the highest predicted probability.
+
+        preds: This tensor represents the predicted class labels for each pixel in the input images. After applying torch.argmax, 
+        the shape of preds will be (N,H,W) where each value corresponds to the predicted class for that pixel.
+        """
+
+        # compute metrics
+        preds = torch.argmax(outputs, dim=1) # convert raw outputs to predicted class labels
         loss = F.cross_entropy(outputs, masks) # calculate the cross-entropy loss
-        self.log('train_loss', loss) # save the loss logs
+        dice = self.dice_coefficient(preds,masks) # calculate dice coefficient
+        jaccard = self.jaccard_score(preds,masks) # calculate jaccard score
+        sensitivity = self.sensitivity(preds,masks) # calculate sensitivity
+        specificity = self.specificity(preds,masks) # calculate specificity
+
+        # log metrics
+        self.log('train_loss', loss, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the loss logs for visualization
+        self.log('train_dice', dice, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the dice logs for visualization
+        self.log('train_jaccard', jaccard, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the jaccard logs for visualization
+        self.log('train_sensitivity', sensitivity, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the sensitivity logs for visualization
+        self.log('train_specificity', specificity, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the specificity logs for visualization
+
         return loss
+    
+    def dice_coefficient(self, preds, targets, smooth=1):
+        preds = preds.contiguous() # contiguous() method to ensure that both preds and targets tensors are stored in a contiguous block of memory. 
+                                # This ensures that subsequent operations on these tensors are efficient and error-free.
+        targets = targets.contiguous()
+        intersection = (preds * targets).sum(dim=2).sum(dim=1)
+        dice = (2. * intersection + smooth) / (preds.sum(dim=2).sum(dim=1) + targets.sum(dim=2).sum(dim=1) + smooth)
+        return dice.mean()
+    
+    def jaccard_score(self, preds, targets, smooth=1):
+        preds = preds.contiguous()
+        targets = targets.contiguous()
+        intersection = (preds*targets).sum(dim=2).sum(dim=1)
+        union = preds.sum(dim=2).sum(dim=1) + targets.sum(dim=2).sum(dim=1) - intersection
+        jaccard = (intersection + smooth) / (union + smooth)
+        return  jaccard.mean()
+    
+    def sensitivity(self, preds, targets, smooth=1):
+        preds = preds.contiguous()
+        targets = targets.contiguous()
+        true_positive = (preds * targets).sum(dim=2).sum(dim=1)
+        false_negative = (targets * (1 - preds)).sum(dim=2).sum(dim=1)
+        sensitivity = (true_positive + smooth) / (true_positive + false_negative + smooth)
+        return sensitivity.mean()
+    
+    def specificity(self, preds, targets, smooth=1):
+        preds = preds.contiguous()
+        targets = targets.contiguous()
+        true_negative = ((1 - preds) * (1 - targets)).sum(dim=2).sum(dim=1)
+        false_positive = ((1 - targets) * preds).sum(dim=2).sum(dim=1)
+        specificity = (true_negative + smooth) / (true_negative + false_positive + smooth)
+        return specificity.mean()
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=0.001) # set optimizer and learning_rate
