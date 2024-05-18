@@ -31,4 +31,14 @@ class Config():
         self.BATCH_SIZE = 16 # set batch size for model training
         self.MAX_EPOCHS = 3 # set maximum epochs for model training
         self.NUM_CLASSES = 4 # set number of classes for contains by mask images; here [0,1,2,3]
+
+        # weights and biases config
+        self.ENTITY = 'neuralninjas' # set team/organization name for wandb account
+        self.PROJECT = 'NRL-brain-tumour-segmentation' # set project name
+        self.REINIT = True # set boolean value for reinitialization
+        self.ANONYMOUS = 'allow' # set anonymous value type
+        self.GROUP = [
+            'Standard-UNet'
+        ] # set group name
+        self.LOG_MODEL = 'all' # set log model type
         
