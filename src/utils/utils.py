@@ -394,3 +394,51 @@ def croppedImagePlot(image:np.ndarray,mask:np.ndarray, trainset_path:str, image_
     ax8.set_title("Cropped mask image") # set figure title
 
     plt.show() # display the plots
+
+def get_user_choice(start:int, end:int) -> int:
+    """
+    This function is used to get user choice in integer within specific range.
+
+    Parameters:
+    - start (int): starting point of the range
+    - end (int): ending point of the range
+
+    Returns:
+    - (int): user choice in integer value
+    """
+
+    while True:
+        try:
+            choice = int(input(f"Please enter a choice between {start} and {end}: ")) # ask users to enter their choice
+            
+            if start <= choice <= end:
+                return choice
+            else:
+                print(f"Invalid choice. Please enter a number between {start} and {end}") # ask user to enter a choice between specified range again
+
+        except ValueError:
+            print(f"Invalid choice. Please enter a number between {start} and {end}") # ask user to enter a choice between specified range again
+
+
+def available_models() -> None:
+    """
+    This function is used to provide a list of available models for training on the existing dataset.
+
+    Parameters: 
+    - (None)
+
+    Returns:
+    - (list,int): returns (available models,user choice) tuple
+    """
+
+    models = ['UNet',
+              'MobileNetV1',
+              'MobileNetV2',
+              'MobileNetV3 (small)',
+              'MobileNetV3 (large)'] # list of available models
+    
+    print("Select any one neural network architecture from the list given below")
+    for i in range(len(models)):
+        print(f"{i}_________{models[i]}") # print list of available models with integer model number
+
+    return models, get_user_choice(0, len(models)-1) # get user choice
