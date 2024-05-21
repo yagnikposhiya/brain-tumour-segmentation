@@ -13,7 +13,10 @@ import torch.nn.functional as F
 from torch import nn
 
 class UNet(pl.LightningModule):
-    def __init__(self, num_classes):
+    def __init__(self, num_classes, learning_rate):
+
+        self.lr = learning_rate # set learning rate
+
         super(UNet, self).__init__()
         # Encoder
         self.enc1 = self.conv_block(1, 64)
@@ -112,11 +115,11 @@ class UNet(pl.LightningModule):
         specificity = self.specificity(preds,masks) # calculate specificity
 
         # log metrics
-        self.log('train_loss', loss, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the loss logs for visualization
-        self.log('train_dice', dice, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the dice logs for visualization
-        self.log('train_jaccard', jaccard, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the jaccard logs for visualization
-        self.log('train_sensitivity', sensitivity, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the sensitivity logs for visualization
-        self.log('train_specificity', specificity, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the specificity logs for visualization
+        self.log('unet_train_loss', loss, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the loss logs for visualization
+        self.log('unet_train_dice', dice, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the dice logs for visualization
+        self.log('unet_train_jaccard', jaccard, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the jaccard logs for visualization
+        self.log('unet_train_sensitivity', sensitivity, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the sensitivity logs for visualization
+        self.log('unet_train_specificity', specificity, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the specificity logs for visualization
 
         return loss
     
@@ -153,5 +156,5 @@ class UNet(pl.LightningModule):
         return specificity.mean()
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=0.001) # set optimizer and learning_rate
+        return torch.optim.Adam(self.parameters(), lr=self.lr) # set optimizer and learning_rate
 
