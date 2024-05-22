@@ -13,12 +13,14 @@ import pytorch_lightning as pl
 
 from config import Config
 from nn_arch.unet import UNet
+from torchsummary import summary
 from brats2020 import prepareDataset
 from brats2020 import SegmentationDataModule
 from utils.utils import showAllTypesOfImages
 from gpu_config.check import check_gpu_config
+from nn_arch.mobilenetv2 import MobileNetV2UNet
 from pytorch_lightning.loggers import WandbLogger
-from utils.utils import Z_Score_Normalization_forImage, croppedImagePlot
+from utils.utils import Z_Score_Normalization_forImage, croppedImagePlot, available_models
 
 
 
@@ -36,7 +38,9 @@ if __name__=='__main__':
 
     # SINGLE DIRECTORY: IMAGE PREPROCESSING
 
+    print("----------------------------------------------")
     print("--- FOR SINGLE DIRECTORY: IMAGE PROCESSING ---")
+    print("----------------------------------------------")
 
     print("Visualizing all types of NIFTI images ...")
     showAllTypesOfImages(config.TRAINSET_PATH,config.TRAIN_IMAGE_PATH) # visualize all types of images for specific record
@@ -81,11 +85,13 @@ if __name__=='__main__':
 
     # FOR MULTIPLE DIRECTORIES: IMAGE PROCESSING
 
+    print("--------------------------------------------------")
     print("--- FOR MULTIPLE DIRECTORIES: IMAGE PROCESSING ---")
+    print("--------------------------------------------------")
 
     print("Preparing dataset...")
     print("Preparing trainset...")
-    dir_path = prepareDataset(config.TRAINSET_PATH,"train") # prepare dataset and stored it into .npy format
+    dir_path = prepareDataset(config.TRAINSET_PATH, config.PATH_TO_SAVE_PROCESSED_DATA,"train") # prepare dataset and stored it into .npy format
     print("Trainset is prepared and stored into .npy format at: \n{}".format(dir_path))
 
     # Here validation set does not contain any mask images so not transforming it into .npy
@@ -99,11 +105,30 @@ if __name__=='__main__':
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') # set device for model training
     data_module = SegmentationDataModule(config.TRAIN_IMAGES_DIR,config.TRAIN_MASKS_DIR,config.VAL_IMAGES_DIR,config.VAL_MASKS_DIR,config.BATCH_SIZE, transform=config.TRANSFORM) # initialize the data module
-    model = UNet(num_classes=config.NUM_CLASSES) # create a normal standard unet model
+
+    print("-------------------------------------------------")
+    print("------- NN ARCHITECTURE (MODEL) SELECTION -------")
+    print("-------------------------------------------------")
+
+    avail_models, user_choice = available_models() # get user choice for available models for training
+    print(f"- You have seleted {avail_models[user_choice]}")
+
+    if user_choice == 0:
+        model = UNet(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE) # create a normal standard unet model
+    elif user_choice == 2:
+        model = MobileNetV2UNet(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE) # create MobileNetV2 model
+
+    # print("- Model summary:\n")
+    # summary(model,(1,128,128)) # print model summary; input shape is extracted @ data loading time
+    # printing summary manually in the forward function
+
     model = model.to(device) # move model architecture to available computing device
     wandb_logger = WandbLogger(log_model=config.LOG_MODEL)
     trainer = pl.Trainer(max_epochs=config.MAX_EPOCHS, log_every_n_steps=1, logger=wandb_logger) # set the maxium number of epochs; saving a training logs at every step
 
+    print("-------------------------------------------------")
+    print("------- NN ARCHITECTURE (MODEL) TRAINING --------")
+    print("-------------------------------------------------")
     print("Training started...")
     trainer.fit(model,data_module) # train the normal standard unet model
     print("Training finished.")
