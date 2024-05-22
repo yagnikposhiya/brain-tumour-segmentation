@@ -1,0 +1,19 @@
+Input
+   |
+   +-----------------------------+
+   |                             |
+   |   1x1 Conv (Expand)         |  if stride == 1 and in_channels == out_channels:
+   |   BatchNorm                 |     x = x + input
+   |   ReLU6                     |
+   |                             |
+   |   3x3 Depthwise Conv        |
+   |   BatchNorm                 |
+   |   ReLU6                     |
+   |                             |
+   |   1x1 Conv (Project)        |
+   |   BatchNorm                 |
+   |                             |
+   +-----------------------------+
+                 |
+               Output
+
