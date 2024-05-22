@@ -11,7 +11,7 @@ import numpy as np
 import nibabel as nib
 import pytorch_lightning as pl
 
-from config import Config
+from config.config import Config
 from nn_arch.unet import UNet
 from torchsummary import summary
 from brats2020 import prepareDataset
