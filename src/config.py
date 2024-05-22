@@ -14,6 +14,7 @@ class Config():
 
         # training and validation dataset path before storing dataset into .npy format
         self.TRAINSET_PATH = os.path.join(self.CWD,'data/raw/') # set training directory path
+        self.PATH_TO_SAVE_PROCESSED_DATA = os.path.join(self.CWD,'data/') # set training directory path
         self.VALIDSET_PATH = os.path.join(self.CWD,'data/raw/') # set validation directory path
         self.TRAIN_IMAGE_PATH =['unstructured/BraTS20_Training_001_flair.nii',
                                 'unstructured/BraTS20_Training_001_t1.nii',
