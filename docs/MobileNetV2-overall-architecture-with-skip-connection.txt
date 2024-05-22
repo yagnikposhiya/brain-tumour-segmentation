@@ -1,0 +1,38 @@
+Input (224x224x3)
+     |
+Conv 3x3, Stride 2, 32 Filters (112x112x32)
+     |
++-----------------------------------------+
+| Inverted Residual Block 1 (Stride 1)    |
+|  - Expand                               |
+|  - Depthwise                            |
+|  - Project                              |
+|  - Skip Connection (if applicable)      |
++-----------------------------------------+
+     |
++-----------------------------------------+
+| Inverted Residual Block 2 (Stride 2)    |
+|  - Expand                               |
+|  - Depthwise                            |
+|  - Project                              |
+|  - Skip Connection (if applicable)      |
+|  - Repeat (n times)                     |
++-----------------------------------------+
+     |
++-----------------------------------------+
+| Inverted Residual Block 3 (Stride 2)    |
+|  - Expand                               |
+|  - Depthwise                            |
+|  - Project                              |
+|  - Skip Connection (if applicable)      |
+|  - Repeat (n times)                     |
++-----------------------------------------+
+     |
+... (Additional Inverted Residual Blocks)
+     |
+Conv 1x1, 1280 Filters (7x7x1280)
+     |
+Global Average Pooling (1x1x1280)
+     |
+Fully Connected Layer (1000 classes)
+
