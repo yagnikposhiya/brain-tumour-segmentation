@@ -17,12 +17,13 @@ from typing import Any
 from utils.utils import Z_Score_Normalization
 from torch.utils.data import Dataset, DataLoader, random_split
 
-def prepareDataset(path:str, directory:str) -> str:
+def prepareDataset(path:str,path_to_save_processed_data:str ,directory:str) -> str:
     """
     This function is used to prepare dataset and save the dataset into .npy format
 
     Parameters:
     - path (str): training directory path
+    - path_to_save_processed_data (str): path of the directory where processed data will be stored
     - directory (str): specify the folder name whether "train" or "valid"
 
     Returns:
@@ -74,17 +75,17 @@ def prepareDataset(path:str, directory:str) -> str:
             if (1-(counts[0]/counts.sum())) > 0.01: # atleast 1% useful volume with labels that are not 0
                 # crop_mask = np.eye(4)[crop_mask] # perform one-hot encoding on mask image
 
-                if not os.path.exists(f'{path}/processed'): # check if processed directory exists or not
-                    os.makedirs(f'{path}/processed') # if not then create it
+                if not os.path.exists(f'{path_to_save_processed_data}/processed'): # check if processed directory exists or not
+                    os.makedirs(f'{path_to_save_processed_data}/processed') # if not then create it
 
-                    if not os.path.exists(f'{path}/processed/{directory}'): # check if train/valid directory exists
-                        os.makedirs(f'{path}/processed/{directory}') # if not then create it
+                    if not os.path.exists(f'{path_to_save_processed_data}/processed/{directory}'): # check if train/valid directory exists
+                        os.makedirs(f'{path_to_save_processed_data}/processed/{directory}') # if not then create it
 
-                        if not os.path.exists(f'{path}/processed/{directory}/images'): # check if images directory exists
-                            os.makedirs(f'{path}/processed/{directory}/images') # if not then create it
+                        if not os.path.exists(f'{path_to_save_processed_data}/processed/{directory}/images'): # check if images directory exists
+                            os.makedirs(f'{path_to_save_processed_data}/processed/{directory}/images') # if not then create it
                         
-                        if not os.path.exists(f'{path}/processed/{directory}/masks'): # check if masks directory exists
-                            os.makedirs(f'{path}/processed/{directory}/masks') # if not then create it
+                        if not os.path.exists(f'{path_to_save_processed_data}/processed/{directory}/masks'): # check if masks directory exists
+                            os.makedirs(f'{path_to_save_processed_data}/processed/{directory}/masks') # if not then create it
                 
                 for j in range(3): # because only 3 types of images are there; those are flair, t1ce, t2
                     for i in range(128): # each image contains 128 slices that's why; 128*3 per single directory images
@@ -97,26 +98,26 @@ def prepareDataset(path:str, directory:str) -> str:
 
                         mask = crop_mask[:,:,i] # assign crop_mask array to mask variable for ease
 
-                        np.save(f'{path}/processed/{directory}/images/image_{image_index+1}_{j+1}_{i+1}.npy',image) # save input image in .npy format
-                        np.save(f'{path}/processed/{directory}/masks/mask_{image_index+1}_{j+1}_{i+1}.npy',mask) # save mask image in .npy format
+                        np.save(f'{path_to_save_processed_data}/processed/{directory}/images/image_{image_index+1}_{j+1}_{i+1}.npy',image) # save input image in .npy format
+                        np.save(f'{path_to_save_processed_data}/processed/{directory}/masks/mask_{image_index+1}_{j+1}_{i+1}.npy',mask) # save mask image in .npy format
 
-                # np.save(f'{path}/processed/{directory}/images/image_{str(image_index)}.npy', crop_image) # save crop image to specified directory
-                # np.save(f'{path}/processed/{directory}/masks/mask_{str(image_index)}.npy', crop_mask) # save crop mask to specified directory
+                # np.save(f'{path_to_save_processed_data}/processed/{directory}/images/image_{str(image_index)}.npy', crop_image) # save crop image to specified directory
+                # np.save(f'{path_to_save_processed_data}/processed/{directory}/masks/mask_{str(image_index)}.npy', crop_mask) # save crop mask to specified directory
             else:
                 print("Image and Mask both are ignored.")
             
         else: # if directory is "validation" directory
-            if not os.path.exists(f'{path}/processed'): # check if processed directory exists or not
-                os.makedirs(f'{path}/processed') # if not then create it
+            if not os.path.exists(f'{path_to_save_processed_data}/processed'): # check if processed directory exists or not
+                os.makedirs(f'{path_to_save_processed_data}/processed') # if not then create it
 
-                if not os.path.exists(f'{path}/processed/{directory}'): # check if train/valid directory exists
-                    os.makedirs(f'{path}/processed/{directory}') # if not then create it
+                if not os.path.exists(f'{path_to_save_processed_data}/processed/{directory}'): # check if train/valid directory exists
+                    os.makedirs(f'{path_to_save_processed_data}/processed/{directory}') # if not then create it
 
-                if not os.path.exists(f'{path}/processed/{directory}/images'): # check if images directory exists
-                    os.makedirs(f'{path}/processed/{directory}/images') # if not then create it
+                if not os.path.exists(f'{path_to_save_processed_data}/processed/{directory}/images'): # check if images directory exists
+                    os.makedirs(f'{path_to_save_processed_data}/processed/{directory}/images') # if not then create it
                         
-                if not os.path.exists(f'{path}/processed/{directory}/masks'): # check if masks directory exists
-                    os.makedirs(f'{path}/processed/{directory}/masks') # if not then create it
+                if not os.path.exists(f'{path_to_save_processed_data}/processed/{directory}/masks'): # check if masks directory exists
+                    os.makedirs(f'{path_to_save_processed_data}/processed/{directory}/masks') # if not then create it
 
             for j in range(3): # because only 3 types of images are there; those are flair, t1ce, t2
                 for i in range(128): # each image contains 128 slices that's why; 128*3 per single directory images
@@ -127,11 +128,11 @@ def prepareDataset(path:str, directory:str) -> str:
                     elif j==2:
                         image = t2_crop_image[:,:,i] # save single slice of cropped image
 
-                    np.save(f'{path}/processed/{directory}/images/image_{image_index+1}_{j+1}_{i+1}.npy',image) # save input image in .npy format
+                    np.save(f'{path_to_save_processed_data}/processed/{directory}/images/image_{image_index+1}_{j+1}_{i+1}.npy',image) # save input image in .npy format
 
             # np.save(f'{path}/processed/{directory}/images/image_{str(image_index)}.npy', crop_image) # save crop image to specified directory
 
-    return f'{path}processed/{directory}' # path of directory where dataset is stored in .npy format
+    return f'{path_to_save_processed_data}processed/{directory}' # path of directory where dataset is stored in .npy format
 
 class SegmentationDataset(Dataset):
     def __init__(self, images_dir, masks_dir, transform=False) -> None:
