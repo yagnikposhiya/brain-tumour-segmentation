@@ -16,8 +16,9 @@ class UNet(pl.LightningModule):
     def __init__(self, num_classes, learning_rate):
 
         self.lr = learning_rate # set learning rate
-
+        self.num_classes = num_classes # set output segmentation classes
         super(UNet, self).__init__()
+        
         # Encoder
         self.enc1 = self.conv_block(1, 64)
         self.enc2 = self.conv_block(64, 128)
@@ -113,10 +114,10 @@ class UNet(pl.LightningModule):
         # compute metrics
         preds = torch.argmax(outputs, dim=1) # convert raw outputs to predicted class labels
         loss = F.cross_entropy(outputs, masks) # calculate the cross-entropy loss
-        dice = self.dice_coefficient(preds,masks) # calculate dice coefficient
-        jaccard = self.jaccard_score(preds,masks) # calculate jaccard score
-        sensitivity = self.sensitivity(preds,masks) # calculate sensitivity
-        specificity = self.specificity(preds,masks) # calculate specificity
+        dice = self.dice_coefficient(preds,masks).mean() # calculate dice coefficient and take mean over batch
+        jaccard = self.jaccard_score(preds,masks).mean() # calculate jaccard score and take mean over batch
+        sensitivity = self.sensitivity(preds,masks).mean() # calculate sensitivity and take mean over batch
+        specificity = self.specificity(preds,masks).mean() # calculate specificity and take mean over batch
 
         # log metrics
         self.log('unet_train_loss', loss, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the loss logs for visualization
@@ -134,10 +135,10 @@ class UNet(pl.LightningModule):
         # compute metrics
         preds = torch.argmax(outputs, dim=1) # convert raw outputs to predicted class labels
         loss = F.cross_entropy(outputs, masks) # calculate the cross-entropy loss
-        dice = self.dice_coefficient(preds,masks) # calculate dice coefficient
-        jaccard = self.jaccard_score(preds,masks) # calculate jaccard score
-        sensitivity = self.sensitivity(preds,masks) # calculate sensitivity
-        specificity = self.specificity(preds,masks) # calculate specificity
+        dice = self.dice_coefficient(preds,masks).mean() # calculate dice coefficient and take mean over batch
+        jaccard = self.jaccard_score(preds,masks).mean() # calculate jaccard score and take mean over batch
+        sensitivity = self.sensitivity(preds,masks).mean() # calculate sensitivity and take mean over batch
+        specificity = self.specificity(preds,masks).mean() # calculate specificity and take mean over batch
 
         # log metrics
         self.log('unet_valid_loss', loss, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the loss logs for visualization
@@ -149,36 +150,36 @@ class UNet(pl.LightningModule):
         return loss
     
     def dice_coefficient(self, preds, targets, smooth=1):
-        preds = preds.contiguous() # contiguous() method to ensure that both preds and targets tensors are stored in a contiguous block of memory. 
-                                # This ensures that subsequent operations on these tensors are efficient and error-free.
-        targets = targets.contiguous()
-        intersection = (preds * targets).sum(dim=2).sum(dim=1)
-        dice = (2. * intersection + smooth) / (preds.sum(dim=2).sum(dim=1) + targets.sum(dim=2).sum(dim=1) + smooth)
-        return dice.mean()
+        preds = F.one_hot(preds, num_classes=self.num_classes).permute(0, 3, 1, 2).float()
+        targets = F.one_hot(targets, num_classes=self.num_classes).permute(0, 3, 1, 2).float()
+        intersection = (preds * targets).sum(dim=(2, 3))
+        union = preds.sum(dim=(2, 3)) + targets.sum(dim=(2, 3))
+        dice = (2. * intersection + smooth) / (union + smooth)
+        return dice.mean(dim=1) # mean over classes
     
     def jaccard_score(self, preds, targets, smooth=1):
-        preds = preds.contiguous()
-        targets = targets.contiguous()
-        intersection = (preds*targets).sum(dim=2).sum(dim=1)
-        union = preds.sum(dim=2).sum(dim=1) + targets.sum(dim=2).sum(dim=1) - intersection
+        preds = F.one_hot(preds, num_classes=self.num_classes).permute(0, 3, 1, 2).float()
+        targets = F.one_hot(targets, num_classes=self.num_classes).permute(0, 3, 1, 2).float()
+        intersection = (preds * targets).sum(dim=(2, 3))
+        union = preds.sum(dim=(2, 3)) + targets.sum(dim=(2, 3)) - intersection
         jaccard = (intersection + smooth) / (union + smooth)
-        return  jaccard.mean()
+        return  jaccard.mean(dim=1)  # mean over classes
     
     def sensitivity(self, preds, targets, smooth=1):
-        preds = preds.contiguous()
-        targets = targets.contiguous()
-        true_positive = (preds * targets).sum(dim=2).sum(dim=1)
-        false_negative = (targets * (1 - preds)).sum(dim=2).sum(dim=1)
+        preds = F.one_hot(preds, num_classes=self.num_classes).permute(0, 3, 1, 2).float()
+        targets = F.one_hot(targets, num_classes=self.num_classes).permute(0, 3, 1, 2).float()
+        true_positive = (preds * targets).sum(dim=(2, 3))
+        false_negative = (targets * (1 - preds)).sum(dim=(2, 3))
         sensitivity = (true_positive + smooth) / (true_positive + false_negative + smooth)
-        return sensitivity.mean()
+        return sensitivity.mean(dim=1)  # mean over classes
     
     def specificity(self, preds, targets, smooth=1):
-        preds = preds.contiguous()
-        targets = targets.contiguous()
-        true_negative = ((1 - preds) * (1 - targets)).sum(dim=2).sum(dim=1)
-        false_positive = ((1 - targets) * preds).sum(dim=2).sum(dim=1)
+        preds = F.one_hot(preds, num_classes=self.num_classes).permute(0, 3, 1, 2).float()
+        targets = F.one_hot(targets, num_classes=self.num_classes).permute(0, 3, 1, 2).float()
+        true_negative = ((1 - preds) * (1 - targets)).sum(dim=(2, 3))
+        false_positive = ((1 - targets) * preds).sum(dim=(2, 3))
         specificity = (true_negative + smooth) / (true_negative + false_positive + smooth)
-        return specificity.mean()
+        return specificity.mean(dim=1)  # mean over classes
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.lr) # set optimizer and learning_rate
