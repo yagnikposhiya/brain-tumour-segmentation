@@ -54,6 +54,8 @@ class UNet(pl.LightningModule):
         # Forward function takes tensor or tensors as input and returns tensor or tensors as output.
         # Forward function actually decide flow, how the data or input passes through the neural network.
         
+        print(f"- Shape input image: {x.shape}")
+
         # Encoder
         enc1 = self.enc1(x)
         enc2 = self.enc2(F.max_pool2d(enc1, 2))
@@ -82,6 +84,8 @@ class UNet(pl.LightningModule):
         
         # Final output layer
         out = self.out_conv(dec1)
+        print(f"- Shape output image: {out.shape}")
+
         return out
 
     def training_step(self, batch, batch_idx):
