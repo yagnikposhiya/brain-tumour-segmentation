@@ -33,8 +33,8 @@ if __name__=='__main__':
     wandb.init(entity=config.ENTITY,
                project=config.PROJECT,
                anonymous=config.ANONYMOUS,
-               group=config.GROUP[0],
                reinit=config.REINIT) # initialize the weights and biases cloud server instance
+    # not passing "group" parameter in the weights and biases initialization process becuase it is not creating groups automatically.
 
     # SINGLE DIRECTORY: IMAGE PREPROCESSING
 
