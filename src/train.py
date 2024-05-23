@@ -20,6 +20,7 @@ from utils.utils import showAllTypesOfImages
 from gpu_config.check import check_gpu_config
 from nn_arch.mobilenetv2 import MobileNetV2UNet
 from pytorch_lightning.loggers import WandbLogger
+from nn_arch.mobilenetv3_small import MobileNetV3SmallUNet
 from utils.utils import Z_Score_Normalization_forImage, croppedImagePlot, available_models
 
 
@@ -117,6 +118,8 @@ if __name__=='__main__':
         model = UNet(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE) # create a normal standard unet model
     elif user_choice == 2:
         model = MobileNetV2UNet(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE) # create MobileNetV2 model
+    elif user_choice == 3:
+        model = MobileNetV3SmallUNet(num_classes=config.NUM_CLASSES,learning_rate=config.LEARNING_RATE) # create MobileNetV3-Small model
 
     # print("- Model summary:\n")
     # summary(model,(1,128,128)) # print model summary; input shape is extracted @ data loading time
