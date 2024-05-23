@@ -54,7 +54,7 @@ class UNet(pl.LightningModule):
         # Forward function takes tensor or tensors as input and returns tensor or tensors as output.
         # Forward function actually decide flow, how the data or input passes through the neural network.
         
-        print(f"- Shape input image: {x.shape}")
+        # print(f"- Shape input image: {x.shape}")
 
         # Encoder
         enc1 = self.enc1(x)
@@ -84,7 +84,7 @@ class UNet(pl.LightningModule):
         
         # Final output layer
         out = self.out_conv(dec1)
-        print(f"- Shape output image: {out.shape}")
+        # print(f"- Shape output image: {out.shape}")
 
         return out
 
@@ -124,6 +124,27 @@ class UNet(pl.LightningModule):
         self.log('unet_train_jaccard', jaccard, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the jaccard logs for visualization
         self.log('unet_train_sensitivity', sensitivity, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the sensitivity logs for visualization
         self.log('unet_train_specificity', specificity, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the specificity logs for visualization
+
+        return loss
+    
+    def validation_step(self, batch, batch_idx):
+        images, masks = batch # load input images and mask images from a single-single batch
+        outputs = self(images) # calculate the prediction
+
+        # compute metrics
+        preds = torch.argmax(outputs, dim=1) # convert raw outputs to predicted class labels
+        loss = F.cross_entropy(outputs, masks) # calculate the cross-entropy loss
+        dice = self.dice_coefficient(preds,masks) # calculate dice coefficient
+        jaccard = self.jaccard_score(preds,masks) # calculate jaccard score
+        sensitivity = self.sensitivity(preds,masks) # calculate sensitivity
+        specificity = self.specificity(preds,masks) # calculate specificity
+
+        # log metrics
+        self.log('unet_valid_loss', loss, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the loss logs for visualization
+        self.log('unet_valid_dice', dice, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the dice logs for visualization
+        self.log('unet_valid_jaccard', jaccard, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the jaccard logs for visualization
+        self.log('unet_valid_sensitivity', sensitivity, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the sensitivity logs for visualization
+        self.log('unet_valid_specificity', specificity, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the specificity logs for visualization
 
         return loss
     
