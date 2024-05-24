@@ -14,6 +14,7 @@ import pytorch_lightning as pl
 from config.config import Config
 from nn_arch.unet import UNet
 from torchsummary import summary
+from nn_arch.boxunet import BoxUNet
 from brats2020 import prepareDataset
 from brats2020 import SegmentationDataModule
 from utils.utils import showAllTypesOfImages
@@ -129,6 +130,8 @@ if __name__=='__main__':
         model = MobileNetV3LargeUNet(num_classes=config.NUM_CLASSES,learning_rate=config.LEARNING_RATE) # create MobileNetV3-Large model
     elif user_choice == 5:
         model = CascadedMobileNetV3LargeUNet(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE) # create Cascaded MobileNetV3-Large model
+    elif user_choice == 6:
+        model = BoxUNet(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE) # create BoxUNet model
 
     # print("- Model summary:\n")
     # summary(model,(1,128,128)) # print model summary; input shape is extracted @ data loading time
