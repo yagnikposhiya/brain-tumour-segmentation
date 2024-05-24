@@ -432,10 +432,11 @@ def available_models() -> None:
     """
 
     models = ['UNet',
-              'MobileNetV1',
-              'MobileNetV2',
-              'MobileNetV3 (small)',
-              'MobileNetV3 (large)'] # list of available models
+              'MobileNetV1UNet',
+              'MobileNetV2UNet',
+              'MobileNetV3UNet (small)',
+              'MobileNetV3UNet (large)',
+              'Cascaded MobileNetV3UNet (large)'] # list of available models
     
     print("Select any one neural network architecture from the list given below")
     for i in range(len(models)):
