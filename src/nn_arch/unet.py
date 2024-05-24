@@ -12,6 +12,27 @@ import torch.nn.functional as F
 
 from torch import nn
 
+"""
+[1] ConvTranspose2D:
+    [1.1] Definition: It is a layer in neural network that performs a transposed convolution, also known as a deconvolution.
+    [1.2] Mechanism:
+        * It uses learnable kernels (filters) to perform the convolution operation in reverse.
+        * It increases the spatial dimensions of the input tensor by inserting zeros between elements (this process is sometimes
+            referred to as "up-convolution" or "backward convolution")
+    [1.3] Advantages:
+        * Allows for learning of the upsampling process due to the learnable parameters.
+        * Can help preserve spatial relationships and details in the upsampled image.
+
+[2] Upsample2D:
+    [1.1] Definition: It is a layer i neural network that performs upsampling by repeating or interpolating the values of the input tensor.
+    [1.2] Mechanism:
+        * It increases the spatial dimensions by a specified scale factor using methods such as nearest neighbor, bilinear or
+            bicubic interpolation.
+    [1.3] Advantages:
+        * Simple and computationally efficient
+        * No learnable parameters, which can be a disadvantage if specific upsampling patterns need to be learned.
+"""
+
 class UNet(pl.LightningModule):
     def __init__(self, num_classes, learning_rate):
 
