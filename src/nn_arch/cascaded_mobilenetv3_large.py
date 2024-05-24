@@ -4,12 +4,6 @@ github: @yagnikposhiya
 organization: NEUROWORK Research Labs
 """
 
-"""
-author: Yagnik Poshiya
-github: @yagnikposhiya
-organization: NEUROWORK Research Labs
-"""
-
 import torch
 import torch.nn as nn
 import pytorch_lightning as pl
