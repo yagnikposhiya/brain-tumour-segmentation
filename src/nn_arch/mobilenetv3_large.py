@@ -9,6 +9,15 @@ import torch.nn as nn
 import pytorch_lightning as pl
 import torch.nn.functional as F
 
+"""
+In-Place Operation in ReLU:
+[1] In-Place Operation: When inplace=True is used, the ReLU operation is performed directly on the input tensor, modifying 
+    its values without allocating additional memory for the output. This can save memory and potentially improve performance.
+
+[2] Standard Operation: When inplace=False, the ReLU operation creates a new tensor with the result, 
+    leaving the input tensor unchanged.
+"""
+
 class HSwish(nn.Module):
     def forward(self,x):
         return x * F.relu6(x+3,inplace=True) / 6
@@ -307,4 +316,5 @@ class MobileNetV3LargeUNet(pl.LightningModule):
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.lr) # set optimizer and learning_rate
+        # return torch.optim.AdamW(self.parameters(),lr=self.lr) # set optimizer and learning rate
     
