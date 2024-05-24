@@ -291,4 +291,5 @@ class MobileNetV3SmallUNet(pl.LightningModule):
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.lr) # set optimizer and learning_rate
+        # return torch.optim.AdamW(self.parameters(),lr=self.lr) # set optimizer and learning rate
     
