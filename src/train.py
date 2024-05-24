@@ -18,9 +18,11 @@ from brats2020 import prepareDataset
 from brats2020 import SegmentationDataModule
 from utils.utils import showAllTypesOfImages
 from gpu_config.check import check_gpu_config
+from nn_arch.mobilenetv1 import MobileNetV1UNet
 from nn_arch.mobilenetv2 import MobileNetV2UNet
 from pytorch_lightning.loggers import WandbLogger
 from nn_arch.mobilenetv3_small import MobileNetV3SmallUNet
+from nn_arch.mobilenetv3_large import MobileNetV3LargeUNet
 from utils.utils import Z_Score_Normalization_forImage, croppedImagePlot, available_models
 
 
@@ -116,10 +118,14 @@ if __name__=='__main__':
 
     if user_choice == 0:
         model = UNet(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE) # create a normal standard unet model
+    elif user_choice == 1:
+        model = MobileNetV1UNet(num_classes=config.NUM_CLASSES,learning_rate=config.LEARNING_RATE) # create MobileNetV1 model
     elif user_choice == 2:
         model = MobileNetV2UNet(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE) # create MobileNetV2 model
     elif user_choice == 3:
         model = MobileNetV3SmallUNet(num_classes=config.NUM_CLASSES,learning_rate=config.LEARNING_RATE) # create MobileNetV3-Small model
+    elif user_choice == 4:
+        model = MobileNetV3LargeUNet(num_classes=config.NUM_CLASSES,learning_rate=config.LEARNING_RATE) # create MobileNetV3-Large model
 
     # print("- Model summary:\n")
     # summary(model,(1,128,128)) # print model summary; input shape is extracted @ data loading time
