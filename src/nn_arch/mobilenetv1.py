@@ -182,11 +182,11 @@ class MobileNetV1UNet(pl.LightningModule):
         specificity = self.specificity(preds,masks).mean() # calculate specificity and take mean over batch
 
         # log metrics
-        self.log('mobilenetv3_large_train_loss', loss, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the loss logs for visualization
-        self.log('mobilenetv3_large_train_dice', dice, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the dice logs for visualization
-        self.log('mobilenetv3_large_train_jaccard', jaccard, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the jaccard logs for visualization
-        self.log('mobilenetv3_large_train_sensitivity', sensitivity, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the sensitivity logs for visualization
-        self.log('mobilenetv3_large_train_specificity', specificity, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the specificity logs for visualization
+        self.log('mobilenetv1_train_loss', loss, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the loss logs for visualization
+        self.log('mobilenetv1_train_dice', dice, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the dice logs for visualization
+        self.log('mobilenetv1_train_jaccard', jaccard, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the jaccard logs for visualization
+        self.log('mobilenetv1_train_sensitivity', sensitivity, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the sensitivity logs for visualization
+        self.log('mobilenetv1_train_specificity', specificity, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the specificity logs for visualization
 
         return loss
     
@@ -216,11 +216,11 @@ class MobileNetV1UNet(pl.LightningModule):
         specificity = self.specificity(preds,masks).mean() # calculate specificity and take mean over batch
 
         # log metrics
-        self.log('mobilenetv3_large_valid_loss', loss, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the loss logs for visualization
-        self.log('mobilenetv3_large_valid_dice', dice, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the dice logs for visualization
-        self.log('mobilenetv3_large_valid_jaccard', jaccard, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the jaccard logs for visualization
-        self.log('mobilenetv3_large_valid_sensitivity', sensitivity, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the sensitivity logs for visualization
-        self.log('mobilenetv3_large_valid_specificity', specificity, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the specificity logs for visualization
+        self.log('mobilenetv1_valid_loss', loss, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the loss logs for visualization
+        self.log('mobilenetv1_valid_dice', dice, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the dice logs for visualization
+        self.log('mobilenetv1_valid_jaccard', jaccard, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the jaccard logs for visualization
+        self.log('mobilenetv1_valid_sensitivity', sensitivity, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the sensitivity logs for visualization
+        self.log('mobilenetv1_valid_specificity', specificity, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the specificity logs for visualization
 
         return loss
     
