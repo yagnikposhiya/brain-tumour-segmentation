@@ -23,6 +23,7 @@ from nn_arch.mobilenetv2 import MobileNetV2UNet
 from pytorch_lightning.loggers import WandbLogger
 from nn_arch.mobilenetv3_small import MobileNetV3SmallUNet
 from nn_arch.mobilenetv3_large import MobileNetV3LargeUNet
+from nn_arch.cascaded_mobilenetv3_large import CascadedMobileNetV3LargeUNet
 from utils.utils import Z_Score_Normalization_forImage, croppedImagePlot, available_models
 
 
@@ -126,6 +127,8 @@ if __name__=='__main__':
         model = MobileNetV3SmallUNet(num_classes=config.NUM_CLASSES,learning_rate=config.LEARNING_RATE) # create MobileNetV3-Small model
     elif user_choice == 4:
         model = MobileNetV3LargeUNet(num_classes=config.NUM_CLASSES,learning_rate=config.LEARNING_RATE) # create MobileNetV3-Large model
+    elif user_choice == 5:
+        model = CascadedMobileNetV3LargeUNet(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE) # create Cascaded MobileNetV3-Large model
 
     # print("- Model summary:\n")
     # summary(model,(1,128,128)) # print model summary; input shape is extracted @ data loading time
