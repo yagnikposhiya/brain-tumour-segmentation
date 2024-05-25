@@ -135,17 +135,55 @@ class UNet(pl.LightningModule):
         # compute metrics
         preds = torch.argmax(outputs, dim=1) # convert raw outputs to predicted class labels
         loss = F.cross_entropy(outputs, masks) # calculate the cross-entropy loss
-        dice = self.dice_coefficient(preds,masks).mean() # calculate dice coefficient and take mean over batch
-        jaccard = self.jaccard_score(preds,masks).mean() # calculate jaccard score and take mean over batch
-        sensitivity = self.sensitivity(preds,masks).mean() # calculate sensitivity and take mean over batch
-        specificity = self.specificity(preds,masks).mean() # calculate specificity and take mean over batch
+
+        (dice_mean_over_classes,dice_label_1,dice_label_2,dice_label_3) = self.dice_coefficient(preds,masks) # calculate dice coefficient and take mean over batch
+        dice_mean_over_batch = dice_mean_over_classes.mean() # take mean over batch
+        dice_label_1 = dice_label_1.mean() # label-1 wise mean
+        dice_label_2 = dice_label_2.mean() # label-2 wise mean
+        dice_label_3 = dice_label_3.mean() # label-3 wise mean
+
+        (jaccard_mean_over_classes,jaccard_label_1,jaccard_label_2,jaccard_label_3) = self.jaccard_score(preds,masks) # calculate jaccard score and take mean over batch
+        jaccard_mean_over_batch = jaccard_mean_over_classes.mean() # take mean over batch
+        jaccard_label_1 = jaccard_label_1.mean() # label-1 wise mean
+        jaccard_label_2 = jaccard_label_2.mean() # label-2 wise mean
+        jaccard_label_3 = jaccard_label_3.mean() # label-3 wise mean
+
+        (sensitivity_mean_over_classes,sensitivity_label_1,sensitivity_label_2,sensitivity_label_3) = self.sensitivity(preds,masks) # calculate sensitivity and take mean over batch
+        sensitivity_mean_over_batch = sensitivity_mean_over_classes.mean() # take mean over batch
+        sensitivity_label_1 = sensitivity_label_1.mean() # label-1 wise mean
+        sensitivity_label_2 = sensitivity_label_2.mean() # label-2 wise mean
+        sensitivity_label_3 = sensitivity_label_3.mean() # label-3 wise mean
+
+
+        (specificity_mean_over_classes,specificity_label_1,specificity_label_2,specificity_label_3) = self.specificity(preds,masks) # calculate specificity and take mean over batch
+        specificity_mean_over_batch = specificity_mean_over_classes.mean() # take mean over batch
+        specificity_label_1 = specificity_label_1.mean() # label-1 wise mean
+        specificity_label_2 = specificity_label_2.mean() # label-2 wise mean
+        specificity_label_3 = specificity_label_3.mean() # label-3 wise mean
 
         # log metrics
         self.log('unet_train_loss', loss, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the loss logs for visualization
-        self.log('unet_train_dice', dice, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the dice logs for visualization
-        self.log('unet_train_jaccard', jaccard, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the jaccard logs for visualization
-        self.log('unet_train_sensitivity', sensitivity, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the sensitivity logs for visualization
-        self.log('unet_train_specificity', specificity, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the specificity logs for visualization
+
+        self.log('unet_train_dice_mean_over_batch', dice_mean_over_batch, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the dice logs for visualization
+        self.log('unet_train_dice_mean_Necrotic_Core', dice_label_1, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the dice_label_1 logs for visualization
+        self.log('unet_train_dice_mean_Peritumoral_Edema', dice_label_2, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the dice_label_2 logs for visualization
+        self.log('unet_train_dice_mean_GDEnhancing_Tumor', dice_label_3, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the dice_label_3 logs for visualization
+
+        self.log('unet_train_jaccard_mean_over_batch', jaccard_mean_over_batch, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the jaccard logs for visualization
+        self.log('unet_train_jaccard_mean_Necrotic_Core', jaccard_label_1, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the jaccard_label_1 logs for visualization
+        self.log('unet_train_jaccard_mean_Peritumoral_Edema', jaccard_label_2, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the jaccard_label_2 logs for visualization
+        self.log('unet_train_jaccard_mean_GDEnhancing_Tumor', jaccard_label_3, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the jaccard_label_3 logs for visualization
+
+        self.log('unet_train_sensitivity_mean_over_batch', sensitivity_mean_over_batch, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the sensitivity logs for visualization
+        self.log('unet_train_sensitivity_mean_Necrotic_Core', sensitivity_label_1, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the sensitivity_label_1 logs for visualization
+        self.log('unet_train_sensitivity_mean_Peritumoral_Edema', sensitivity_label_2, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the sensitivity_label_2 logs for visualization
+        self.log('unet_train_sensitivity_mean_GDEnhancing_Tumor', sensitivity_label_3, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the sensitivity_label_3 logs for visualization
+
+
+        self.log('unet_train_specificity_mean_over_batch', specificity_mean_over_batch, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the specificity logs for visualization
+        self.log('unet_train_specificity_mean_Necrotic_Core', specificity_label_1, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the specificity_label_1 logs for visualization
+        self.log('unet_train_specificity_mean_Peritumoral_Edema', specificity_label_2, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the specificity_label_2 logs for visualization
+        self.log('unet_train_specificity_mean_GDEnhancing_Tumor', specificity_label_3, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the specificity_label_2 logs for visualization
 
         return loss
     
@@ -156,27 +194,71 @@ class UNet(pl.LightningModule):
         # compute metrics
         preds = torch.argmax(outputs, dim=1) # convert raw outputs to predicted class labels
         loss = F.cross_entropy(outputs, masks) # calculate the cross-entropy loss
-        dice = self.dice_coefficient(preds,masks).mean() # calculate dice coefficient and take mean over batch
-        jaccard = self.jaccard_score(preds,masks).mean() # calculate jaccard score and take mean over batch
-        sensitivity = self.sensitivity(preds,masks).mean() # calculate sensitivity and take mean over batch
-        specificity = self.specificity(preds,masks).mean() # calculate specificity and take mean over batch
+
+        (dice_mean_over_classes,dice_label_1,dice_label_2,dice_label_3) = self.dice_coefficient(preds,masks) # calculate dice coefficient and take mean over batch
+        dice_mean_over_batch = dice_mean_over_classes.mean() # take mean over batch
+        dice_label_1 = dice_label_1.mean() # label-1 wise mean
+        dice_label_2 = dice_label_2.mean() # label-2 wise mean
+        dice_label_3 = dice_label_3.mean() # label-3 wise mean
+
+        (jaccard_mean_over_classes,jaccard_label_1,jaccard_label_2,jaccard_label_3) = self.jaccard_score(preds,masks) # calculate jaccard score and take mean over batch
+        jaccard_mean_over_batch = jaccard_mean_over_classes.mean() # take mean over batch
+        jaccard_label_1 = jaccard_label_1.mean() # label-1 wise mean
+        jaccard_label_2 = jaccard_label_2.mean() # label-2 wise mean
+        jaccard_label_3 = jaccard_label_3.mean() # label-3 wise mean
+
+        (sensitivity_mean_over_classes,sensitivity_label_1,sensitivity_label_2,sensitivity_label_3) = self.sensitivity(preds,masks) # calculate sensitivity and take mean over batch
+        sensitivity_mean_over_batch = sensitivity_mean_over_classes.mean() # take mean over batch
+        sensitivity_label_1 = sensitivity_label_1.mean() # label-1 wise mean
+        sensitivity_label_2 = sensitivity_label_2.mean() # label-2 wise mean
+        sensitivity_label_3 = sensitivity_label_3.mean() # label-3 wise mean
+
+
+        (specificity_mean_over_classes,specificity_label_1,specificity_label_2,specificity_label_3) = self.specificity(preds,masks) # calculate specificity and take mean over batch
+        specificity_mean_over_batch = specificity_mean_over_classes.mean() # take mean over batch
+        specificity_label_1 = specificity_label_1.mean() # label-1 wise mean
+        specificity_label_2 = specificity_label_2.mean() # label-2 wise mean
+        specificity_label_3 = specificity_label_3.mean() # label-3 wise mean
 
         # log metrics
         self.log('unet_valid_loss', loss, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the loss logs for visualization
-        self.log('unet_valid_dice', dice, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the dice logs for visualization
-        self.log('unet_valid_jaccard', jaccard, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the jaccard logs for visualization
-        self.log('unet_valid_sensitivity', sensitivity, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the sensitivity logs for visualization
-        self.log('unet_valid_specificity', specificity, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the specificity logs for visualization
+
+        self.log('unet_valid_dice_mean_over_batch', dice_mean_over_batch, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the dice logs for visualization
+        self.log('unet_valid_dice_mean_Necrotic_Core', dice_label_1, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the dice_label_1 logs for visualization
+        self.log('unet_valid_dice_mean_Peritumoral_Edema', dice_label_2, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the dice_label_2 logs for visualization
+        self.log('unet_valid_dice_mean_GDEnhancing_Tumor', dice_label_3, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the dice_label_3 logs for visualization
+
+        self.log('unet_valid_jaccard_mean_over_batch', jaccard_mean_over_batch, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the jaccard logs for visualization
+        self.log('unet_valid_jaccard_mean_Necrotic_Core', jaccard_label_1, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the jaccard_label_1 logs for visualization
+        self.log('unet_valid_jaccard_mean_Peritumoral_Edema', jaccard_label_2, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the jaccard_label_2 logs for visualization
+        self.log('unet_valid_jaccard_mean_GDEnhancing_Tumor', jaccard_label_3, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the jaccard_label_3 logs for visualization
+
+        self.log('unet_valid_sensitivity_mean_over_batch', sensitivity_mean_over_batch, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the sensitivity logs for visualization
+        self.log('unet_valid_sensitivity_mean_Necrotic_Core', sensitivity_label_1, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the sensitivity_label_1 logs for visualization
+        self.log('unet_valid_sensitivity_mean_Peritumoral_Edema', sensitivity_label_2, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the sensitivity_label_2 logs for visualization
+        self.log('unet_valid_sensitivity_mean_GDEnhancing_Tumor', sensitivity_label_3, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the sensitivity_label_3 logs for visualization
+
+        self.log('unet_valid_specificity_mean_over_batch', specificity_mean_over_batch, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the specificity logs for visualization
+        self.log('unet_valid_specificity_mean_Necrotic_Core', specificity_label_1, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the specificity_label_1 logs for visualization
+        self.log('unet_valid_specificity_mean_Peritumoral_Edema', specificity_label_2, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the specificity_label_2 logs for visualization
+        self.log('unet_valid_specificity_mean_GDEnhancing_Tumor', specificity_label_3, on_step=True, on_epoch=True, prog_bar=True, enable_graph=True) # save the specificity_label_3 logs for visualization
 
         return loss
     
     def dice_coefficient(self, preds, targets, smooth=1):
+        """
+        Classes and their labels:
+        label-0: Background
+        label-1: Necrotic and Non-enhancing Tumor Core (NCR/NET)
+        label-2: Peritumoral Edema
+        label-3: GD-enhancing Tumor
+        """
         preds = F.one_hot(preds, num_classes=self.num_classes).permute(0, 3, 1, 2).float()
         targets = F.one_hot(targets, num_classes=self.num_classes).permute(0, 3, 1, 2).float()
         intersection = (preds * targets).sum(dim=(2, 3))
         union = preds.sum(dim=(2, 3)) + targets.sum(dim=(2, 3))
         dice = (2. * intersection + smooth) / (union + smooth)
-        return dice.mean(dim=1) # mean over classes
+        return dice.mean(dim=1), dice[:,1], dice[:,2], dice[:3] # (mean over classes, label-1, label-2, label-3)
     
     def jaccard_score(self, preds, targets, smooth=1):
         preds = F.one_hot(preds, num_classes=self.num_classes).permute(0, 3, 1, 2).float()
@@ -184,7 +266,7 @@ class UNet(pl.LightningModule):
         intersection = (preds * targets).sum(dim=(2, 3))
         union = preds.sum(dim=(2, 3)) + targets.sum(dim=(2, 3)) - intersection
         jaccard = (intersection + smooth) / (union + smooth)
-        return  jaccard.mean(dim=1)  # mean over classes
+        return  jaccard.mean(dim=1), jaccard[:,1], jaccard[:,2], jaccard[:3] # (mean over classes, label-1, label-2, label-3)
     
     def sensitivity(self, preds, targets, smooth=1):
         preds = F.one_hot(preds, num_classes=self.num_classes).permute(0, 3, 1, 2).float()
@@ -192,7 +274,7 @@ class UNet(pl.LightningModule):
         true_positive = (preds * targets).sum(dim=(2, 3))
         false_negative = (targets * (1 - preds)).sum(dim=(2, 3))
         sensitivity = (true_positive + smooth) / (true_positive + false_negative + smooth)
-        return sensitivity.mean(dim=1)  # mean over classes
+        return sensitivity.mean(dim=1), sensitivity[:,1], sensitivity[:,2], sensitivity[:3] # (mean over classes, label-1, label-2, label-3)
     
     def specificity(self, preds, targets, smooth=1):
         preds = F.one_hot(preds, num_classes=self.num_classes).permute(0, 3, 1, 2).float()
@@ -200,7 +282,7 @@ class UNet(pl.LightningModule):
         true_negative = ((1 - preds) * (1 - targets)).sum(dim=(2, 3))
         false_positive = ((1 - targets) * preds).sum(dim=(2, 3))
         specificity = (true_negative + smooth) / (true_negative + false_positive + smooth)
-        return specificity.mean(dim=1)  # mean over classes
+        return specificity.mean(dim=1), specificity[:,1], specificity[:,2], specificity[:3] # (mean over classes, label-1, label-2, label-3)
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.lr) # set optimizer and learning_rate
