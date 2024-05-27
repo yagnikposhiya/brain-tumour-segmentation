@@ -480,3 +480,36 @@ def save_trained_model(model, model_prefix: str, path: str) -> None:
 
     torch.save(model.state_dict(),os.path.join(path,f"{model_prefix}_{model_name_from_user}.pth")) # save the at specified path and specified name
     print(f"Trained model is successfully saved at: \n{os.path.join(path,f"{model_prefix}_{model_name_from_user}.pth")}")
+
+def load_saved_model(model_class,num_classes,learning_rate) -> torch.any:
+    """
+    This function is used to load saved trained models.
+    
+    Parameters:
+    - model_class (any): model class
+    - num_classes (int) : number of segmentation classes
+    - learning_rate (float): learning rate
+
+    Returns:
+    - (None)
+    """
+
+    while True:
+        try:
+            model_path = str(input("Enter path where model file exists (with file name): ")) # ask user to enter path where model file exists
+
+            if not os.path.exists(model_path): # check whether model file is exist or not
+                print(f"The file {model_path} does not exist.")
+                return None
+            
+            elif os.path.exists(model_path) and os.path.isfile(model_path):
+                model = model_class(num_classes=num_classes,learning_rate=learning_rate) # initiailze model class
+                model.load_state_dict(torch.load(model_path)) # load the saved state dictionary
+                # model.eval() # set the model to evaluation mode
+                return model
+            
+            else:
+                print(f"Is a directory: {model_path}")
+            
+        except ValueError:
+            print(f"The file {model_path} does not exist.")
