@@ -25,7 +25,7 @@ from pytorch_lightning.loggers import WandbLogger
 from nn_arch.mobilenetv3_small import MobileNetV3SmallUNet
 from nn_arch.mobilenetv3_large import MobileNetV3LargeUNet
 from nn_arch.cascaded_mobilenetv3_large import CascadedMobileNetV3LargeUNet
-from utils.utils import Z_Score_Normalization_forImage, croppedImagePlot, available_models
+from utils.utils import Z_Score_Normalization_forImage, croppedImagePlot, available_models, save_trained_model
 
 
 
@@ -147,5 +147,11 @@ if __name__=='__main__':
     print("Training started...")
     trainer.fit(model,data_module) # train the normal standard unet model
     print("Training finished.")
+
+    print("-------------------------------------------------")
+    print("-------------- SAVE TRAINED MODEL ---------------")
+    print("-------------------------------------------------")
+    print("Saving trained model...")
+    save_trained_model(model=model, model_prefix=avail_models[user_choice], path=config.PATH_TO_SAVE_TRAINED_MODEL) # save trained model
 
     wandb.finish() # close the weights and biases cloud instance
