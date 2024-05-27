@@ -8,6 +8,7 @@ matplotlib.use('TkAgg')  # or 'Qt5Agg' or any other backend that supports intera
 # by default backend: FigureCanvasAgg
 
 import os
+import torch
 import numpy as np
 import nilearn as nl
 import nibabel as nib
@@ -444,3 +445,38 @@ def available_models() -> None:
         print(f"{i}_________{models[i]}") # print list of available models with integer model number
 
     return models, get_user_choice(0, len(models)-1) # get user choice
+
+def save_trained_model(model, model_prefix: str, path: str) -> None:
+    """
+    This function is used to save trained models at specified path.
+
+    Parameters:
+    - model (any): model file which contains metadata with parameters
+    - model_prefix (str): model file will be saved with this prefix (model name)
+    - path (str): path to the directory where model will be saved
+
+    Returns:
+    - (None)
+    """
+
+    if not os.path.exists(path): # check directory exists or not
+        os.makedirs(path) # if not then create it
+
+    model_prefix = model_prefix.replace(" ","_") # replace white space if it available in the model name/prefix
+    model_prefix = model_prefix.replace("(","").replace(")","") # remove () braces from model prefix
+
+    while True:
+        try:
+            model_name_from_user = str(input(f"Enter model name (File will be saved with \"{model_prefix}\" prefix): ")) # ask user to enter model name
+            
+            if not os.path.exists(os.path.join(path,f"{model_prefix}_{model_name_from_user}.pth")):
+                break
+            else:
+                print("File with the same name is already exist. Please enter unique name.") # ask user to enter a filename again
+
+        except ValueError:
+            print("File with the same name is already exist. Please enter unique name.") # ask user to enter a filename again   
+
+
+    torch.save(model.state_dict(),os.path.join(path,f"{model_prefix}_{model_name_from_user}.pth")) # save the at specified path and specified name
+    print(f"Trained model is successfully saved at: \n{os.path.join(path,f"{model_prefix}_{model_name_from_user}.pth")}")
