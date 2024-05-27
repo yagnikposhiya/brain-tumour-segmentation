@@ -27,6 +27,7 @@ class Config():
         self.TRAIN_MASKS_DIR = '' # automatically set path for the directory contains mask images in .npy format (training)
         self.VAL_IMAGES_DIR = '' # set path for the directory contains stacked images in .npy format (validation)
         self.VAL_MASKS_DIR = '' # set path for the directory contains mask images in .npy format (validation)
+        self.PATH_TO_SAVE_TRAINED_MODEL = os.path.join(self.CWD,'saved_models/') # set path to save trained model
 
         # model training parameters
         self.BATCH_SIZE = 16 # set batch size for model training
