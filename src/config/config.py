@@ -31,7 +31,7 @@ class Config():
 
         # model training parameters
         self.BATCH_SIZE = 16 # set batch size for model training
-        self.MAX_EPOCHS = 3 # set maximum epochs for model training
+        self.MAX_EPOCHS = 100 # set maximum epochs for model training
         self.NUM_CLASSES = 4 # set number of classes for contains by mask images; here [0,1,2,3]
         self.LEARNING_RATE =0.001 # set learning rate
         self.TRANSFORM = True # set boolean value for applying augmentation techniques for training set and techniques are horizontal flip and vertical flip
