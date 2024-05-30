@@ -6,7 +6,6 @@ organization: NEUROWORK Research Labs
 
 import os
 import glob
-from pytorch_lightning.utilities.types import EVAL_DATALOADERS
 import torch
 import numpy as np
 import nibabel as nib
