@@ -18,6 +18,7 @@ import nilearn.plotting as nlplt
 from scipy.stats import norm
 from skimage.util import montage
 from skimage.transform import rotate
+from matplotlib.colors import ListedColormap
 
 def showAllTypesOfImages(trainset_path:str, image_name:list) -> None:
     """
@@ -496,7 +497,8 @@ def load_saved_model(model_class,num_classes,learning_rate) -> torch.any:
 
     while True:
         try:
-            model_path = str(input("Enter path where model file exists (with file name): ")) # ask user to enter path where model file exists
+            model_path = str(input("Enter path where model file exists (with filename): ")) # ask user to enter path where model file exists
+            print("Loading saved model...")
 
             if not os.path.exists(model_path): # check whether model file is exist or not
                 print(f"The file {model_path} does not exist.")
@@ -513,3 +515,98 @@ def load_saved_model(model_class,num_classes,learning_rate) -> torch.any:
             
         except ValueError:
             print(f"The file {model_path} does not exist.")
+
+def prepareImageForInference() -> torch.Tensor:
+    """
+    This function is used to load and pre-process the image for inference.
+
+    Parameters:
+    - (None)
+
+    Returns:
+    - (torch.Tensor): return input image in tensor type with numpy type also
+    """
+
+    while True:
+        try:
+            image_path = str(input("Enter path where image file exists (with filename): "))# ask user to enter image path
+            mask_path = str(input("Enter path where mask file exists (with filename): ")) # ask user to enter mask path
+
+            print("Preparing image/mask for inference...")
+
+            if (not os.path.exists(image_path) or (not os.path.exists(mask_path))): # check whether image file is exist or not
+                print(f"The file either {image_path} or {mask_path} does not exist.")
+                return None
+            
+            elif (os.path.exists(image_path) and os.path.exists(mask_path)) and (os.path.isfile(image_path) and os.path.isfile(mask_path)):
+                image = nib.load(image_path).get_fdata() # load input image
+                Z_Score_Normalization(image) # apply z-score normalization to image
+
+                mask = nib.load(mask_path).get_fdata() # load mask 
+
+                image = image[56:184, 56:184, 13:141] # crop image and transform image shape to (128,128,128)
+                mask = mask[56:184, 56:184, 13:141] # crop mask and transform mask shape to (128,128,128)
+
+                image = image[:,:,62] # select only single slice from an image
+                mask = mask[:,:,62] # select only single slice from mask
+                mask = mask.astype(np.uint8) # change the data type
+                print(f"- Grountruth mask unique before label changing: {np.unique(mask)}")
+                mask [mask == 4] = 3 # reassign mask value 4 to 3
+                print(f"- Grountruth mask unique after label changing: {np.unique(mask)}")
+
+
+                np_image = image # copy image which is in numpy format
+                np_mask = mask # copy mask which is in numpy format
+
+                image = np.expand_dims(image,axis=0) # add channel dimension to make the shape (1,128,128)
+
+                print(f"- Shape image before converting into torch.tensor: {image.shape}")
+                print(f"- Shape mask before converting into torch.tensor: {np_mask.shape}")
+
+                image = torch.tensor(image, dtype=torch.float32).unsqueeze(0) # convert numpy array into torch tensor and add batch dimension to an image
+                mask = torch.tensor(mask,dtype=torch.long) # convert to torch tensor
+
+                print(f"- Shape image after converting into torch.tensor: {image.shape}")
+
+                return image, mask, np_image, np_mask
+            
+            else:
+                print(f"Is a directory: either {image_path} or {mask_path}")
+
+        except ValueError:
+            print(f"The file either {image_path} or {mask_path} does not exist.")
+
+
+def groundTruthVSPredicted_AllClasses(image: np.ndarray, groundtruth_mask: np.ndarray, predicted_mask:np.ndarray, model:str) -> None:
+    """
+    This function is used to plot normal images with groundtruth and predicted ROIs.
+
+    Parameters:
+    - image (np.ndarray): tensor normal image
+    - groundtruth_mask (np.ndarray): tensor groundtruth mask image
+    - predicted_mask (np.ndarray): tensor predicted mask image
+    - model (str): name of the neural network architecture
+
+    Returns:
+    - (None)
+    """
+
+    # define a custom colormap for the mask
+    class_colors = ['black','red','green','yellow'] # colors for classes 0, 1, 2, and 3
+    cmap = ListedColormap(class_colors)
+
+    print(f"- Groundtruth mask shape: {groundtruth_mask.shape}")
+    print(f"- Groundtruth mask: {groundtruth_mask}")
+
+    fig, (ax1,ax2) = plt.subplots(nrows=1, ncols=2, figsize=(20,20)) # create a figure canvas with 1 row and 2 columns with 20*20 figure size each
+    ax1.imshow(image, cmap='gray', interpolation=None) # display the normal image with grayscale
+    ax1.imshow(groundtruth_mask, cmap=cmap, interpolation=None, alpha=0.3) # overlay the mask with transparency
+    ax1.set_title(f"Image with groundtruth ROI, model: {model}")
+    
+    predicted_mask = predicted_mask.permute(1,2,0) # rearrange the dimension from (1,128,128) to (128,128,1)
+
+    ax2.imshow(image, cmap='gray', interpolation=None) # display the normal image with grayscale
+    ax2.imshow(predicted_mask, cmap=cmap, interpolation=None, alpha=0.3) # overlay the mask with transparency
+    ax2.set_title(f"Image with predicted ROI, model: {model}")
+
+    plt.show() # display the plots
