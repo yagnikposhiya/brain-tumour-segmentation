@@ -25,6 +25,8 @@ from pytorch_lightning.loggers import WandbLogger
 from nn_arch.mobilenetv3_small import MobileNetV3SmallUNet
 from nn_arch.mobilenetv3_large import MobileNetV3LargeUNet
 from nn_arch.cascaded_mobilenetv3_large import CascadedMobileNetV3LargeUNet
+from nn_arch.mobilenetv3_large_without_SEblock import MobileNetV3LargeUNet_Without_SEBlock
+from utils.utils import flipImageHorizontally, flipImageVertically, Z_Score_Normalization_forSingleSlice
 from utils.utils import Z_Score_Normalization_forImage, croppedImagePlot, available_models, save_trained_model
 
 
@@ -83,6 +85,18 @@ if __name__=='__main__':
 
     croppedImagePlot(crop_stack_image,crop_mask_image,config.TRAINSET_PATH,config.TRAIN_IMAGE_PATH) # plot flair, t1ce, t2, and mask images before and after applying cropping
 
+    print("Flipping image horizontally...")
+    flipImageHorizontally(config.TRAINSET_PATH,config.TRAIN_IMAGE_PATH[0],config.TRAIN_IMAGE_PATH[-1]) # flip image horizontally
+    print("Image is flipped horizontally successfully.")
+
+    print("Flipping image vertically...")
+    flipImageVertically(config.TRAINSET_PATH,config.TRAIN_IMAGE_PATH[0],config.TRAIN_IMAGE_PATH[-1]) # flip image horizontally
+    print("Image is flipped vertically successfully.")
+
+    print("Applying Z-score normalization...")
+    Z_Score_Normalization_forSingleSlice(config.TRAINSET_PATH,config.TRAIN_IMAGE_PATH[1]) # apply z-score normalization and visualize image before/after z-score normalization
+    print("Z-score normalization is applied successfully.")
+
     print("Performing One-Hot encoding for mask image...")
     encoded_mask_image = np.eye(4)[crop_mask_image] # perform one-hot encoding on mask image
     print("One-Hot encoding is performed successully.")
@@ -132,6 +146,8 @@ if __name__=='__main__':
         model = CascadedMobileNetV3LargeUNet(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE) # create Cascaded MobileNetV3-Large model
     elif user_choice == 6:
         model = BoxUNet(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE) # create BoxUNet model
+    elif user_choice == 7:
+        model = MobileNetV3LargeUNet_Without_SEBlock(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE) # create MobileNetV3-Large architecture without SE Block
 
     # print("- Model summary:\n")
     # summary(model,(1,128,128)) # print model summary; input shape is extracted @ data loading time
