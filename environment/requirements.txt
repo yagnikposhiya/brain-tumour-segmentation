@@ -4,4 +4,5 @@ nilearn
 torchvision
 lightning
 torch-summary
-https://github.com/miykael/gif_your_nifti
+matplotlib
+scikit-image
