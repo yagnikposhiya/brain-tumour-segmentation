@@ -88,7 +88,7 @@ class MobileNetV3LargeUNet_Without_SEBlock(pl.LightningModule):
 
         # encoder (mobilenetv3-small) input layer
         self.input_layer = nn.Sequential(
-            nn.Conv2d(in_channels=1,out_channels=16,kernel_size=3,stride=2,padding=1,bias=False),
+            nn.Conv2d(in_channels=3,out_channels=16,kernel_size=3,stride=2,padding=1,bias=False),
             nn.BatchNorm2d(16),
             HSwish()
         )
