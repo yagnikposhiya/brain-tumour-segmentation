@@ -31,7 +31,7 @@ class Config():
 
         # model training parameters
         self.BATCH_SIZE = 16 # set batch size for model training
-        self.MAX_EPOCHS = 100 # set maximum epochs for model training
+        self.MAX_EPOCHS = 2 # set maximum epochs for model training
         self.NUM_CLASSES = 4 # set number of classes for contains by mask images; here [0,1,2,3]
         self.LEARNING_RATE =0.001 # set learning rate
         self.TRANSFORM = True # set boolean value for applying augmentation techniques for training set and techniques are horizontal flip and vertical flip
@@ -49,4 +49,21 @@ class Config():
             'MobileNetV3 (large)'
         ] # set group name
         self.LOG_MODEL = 'all' # set log model type
+
+    def printConfiguration(self):
+        """
+        This function is used to print all configuration related to paths and model training params.
+
+        Parameters:
+        - (None)
+
+        Returns:
+        - (None)
+        """
+
+        print(f"Configurations:")
+        print(f"Current Working Directory: {self.CWD}, Trainset_path: {self.TRAINSET_PATH}, Validset_path: {self.VALIDSET_PATH}",
+              f"Train_image_path: {self.TRAIN_IMAGE_PATH}, Path_to_save_processed_data: {self.PATH_TO_SAVE_PROCESSED_DATA}",
+              f"Path_to_save_trained_model: {self.PATH_TO_SAVE_TRAINED_MODEL}, Batch_size: {self.BATCH_SIZE}, Max_epochs: {self.MAX_EPOCHS}",
+              f"Num_classes: {self.NUM_CLASSES}, Learning_rate: {self.LEARNING_RATE}, Trasform/Data_augmentation: {self.TRANSFORM}")
         
