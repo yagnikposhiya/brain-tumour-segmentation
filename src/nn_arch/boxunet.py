@@ -20,7 +20,7 @@ class BoxUNet(pl.LightningModule):
         super(BoxUNet, self).__init__()
         
         # Encoder
-        self.enc1 = self.conv_block(1, 64)
+        self.enc1 = self.conv_block(3, 64)
         self.enc2 = self.conv_block(64, 128)
         self.enc3 = self.conv_block(128, 256)
         self.enc4 = self.conv_block(256, 512)
