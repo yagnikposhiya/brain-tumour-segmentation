@@ -42,6 +42,8 @@ if __name__=='__main__':
                anonymous=config.ANONYMOUS,
                reinit=config.REINIT) # initialize the weights and biases cloud server instance
     # not passing "group" parameter in the weights and biases initialization process becuase it is not creating groups automatically.
+    
+    config.printConfiguration() # print all configuration related to paths and model trainig parameters
 
     # SINGLE DIRECTORY: IMAGE PREPROCESSING
 
