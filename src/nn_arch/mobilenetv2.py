@@ -101,7 +101,7 @@ class MobileNetV2UNet(pl.LightningModule):
 
         # encoder (mobilenetv2) input layer
         self.input_layer = nn.Sequential(
-            nn.Conv2d(in_channels=1,out_channels=32,kernel_size=3,stride=2,padding=1,bias=False),
+            nn.Conv2d(in_channels=3,out_channels=32,kernel_size=3,stride=2,padding=1,bias=False),
             nn.BatchNorm2d(32),
             nn.ReLU6(inplace=True)
         )
