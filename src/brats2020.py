@@ -86,19 +86,18 @@ def prepareDataset(path:str,path_to_save_processed_data:str ,directory:str) -> s
                         if not os.path.exists(f'{path_to_save_processed_data}/processed/{directory}/masks'): # check if masks directory exists
                             os.makedirs(f'{path_to_save_processed_data}/processed/{directory}/masks') # if not then create it
                 
-                for j in range(3): # because only 3 types of images are there; those are flair, t1ce, t2
-                    for i in range(128): # each image contains 128 slices that's why; 128*3 per single directory images
-                        if j==0:
-                            image = flair_crop_image[:,:,i] # save single slice of cropped image
-                        elif j==1:
-                            image = t1ce_crop_image[:,:,i] # save single slice of cropped image
-                        elif j==2:
-                            image = t2_crop_image[:,:,i] # save single slice of cropped image
+                # for j in range(3): # because only 3 types of images are there; those are flair, t1ce, t2
+                for i in range(128): # each image contains 128 slices that's why; 128*3 per single directory images
+                    flair_image = flair_crop_image[:,:,i] # save single slice of cropped image
+                    t1ce_image = t1ce_crop_image[:,:,i] # save single slice of cropped image
+                    t2_image = t2_crop_image[:,:,i] # save single slice of cropped image
 
-                        mask = crop_mask[:,:,i] # assign crop_mask array to mask variable for ease
+                    image = np.stack([flair_image,t1ce_image,t2_image],axis=2) # create a stacked image of shape (3,128,128)
+                    mask = crop_mask[:,:,i] # assign crop_mask array to mask variable for ease
 
-                        np.save(f'{path_to_save_processed_data}/processed/{directory}/images/image_{image_index+1}_{j+1}_{i+1}.npy',image) # save input image in .npy format
-                        np.save(f'{path_to_save_processed_data}/processed/{directory}/masks/mask_{image_index+1}_{j+1}_{i+1}.npy',mask) # save mask image in .npy format
+                    # np.save(f'{path_to_save_processed_data}/processed/{directory}/images/image_{image_index+1}_{j+1}_{i+1}.npy',image) # save input image in .npy format
+                    np.save(f'{path_to_save_processed_data}/processed/{directory}/images/image_{image_index+1}_{i+1}.npy',image) # save input image in .npy format
+                    np.save(f'{path_to_save_processed_data}/processed/{directory}/masks/mask_{image_index+1}_{i+1}.npy',mask) # save mask image in .npy format
 
                 # np.save(f'{path_to_save_processed_data}/processed/{directory}/images/image_{str(image_index)}.npy', crop_image) # save crop image to specified directory
                 # np.save(f'{path_to_save_processed_data}/processed/{directory}/masks/mask_{str(image_index)}.npy', crop_mask) # save crop mask to specified directory
@@ -118,16 +117,17 @@ def prepareDataset(path:str,path_to_save_processed_data:str ,directory:str) -> s
                 if not os.path.exists(f'{path_to_save_processed_data}/processed/{directory}/masks'): # check if masks directory exists
                     os.makedirs(f'{path_to_save_processed_data}/processed/{directory}/masks') # if not then create it
 
-            for j in range(3): # because only 3 types of images are there; those are flair, t1ce, t2
-                for i in range(128): # each image contains 128 slices that's why; 128*3 per single directory images
-                    if j==0:
-                        image = flair_crop_image[:,:,i] # save single slice of cropped image
-                    elif j==1:
-                        image = t1ce_crop_image[:,:,i] # save single slice of cropped image
-                    elif j==2:
-                        image = t2_crop_image[:,:,i] # save single slice of cropped image
+            for i in range(128): # each image contains 128 slices that's why; 128*3 per single directory images
+                flair_image = flair_crop_image[:,:,i] # save single slice of cropped image
+                t1ce_image = t1ce_crop_image[:,:,i] # save single slice of cropped image
+                t2_image = t2_crop_image[:,:,i] # save single slice of cropped image
 
-                    np.save(f'{path_to_save_processed_data}/processed/{directory}/images/image_{image_index+1}_{j+1}_{i+1}.npy',image) # save input image in .npy format
+                image = np.stack([flair_image,t1ce_image,t2_image],axis=2) # create a stacked image of shape (3,128,128)
+                # mask = crop_mask[:,:,i] # assign crop_mask array to mask variable for ease
+
+                # np.save(f'{path_to_save_processed_data}/processed/{directory}/images/image_{image_index+1}_{j+1}_{i+1}.npy',image) # save input image in .npy format
+                np.save(f'{path_to_save_processed_data}/processed/{directory}/images/image_{image_index+1}_{i+1}.npy',image) # save input image in .npy format
+                # np.save(f'{path_to_save_processed_data}/processed/{directory}/masks/mask_{image_index+1}_{i+1}.npy',mask) # save mask image in .npy format
 
             # np.save(f'{path}/processed/{directory}/images/image_{str(image_index)}.npy', crop_image) # save crop image to specified directory
 
@@ -159,21 +159,31 @@ class SegmentationDataset(Dataset):
         # print("- Shape of the mask stored into .npy format: {}".format(mask.shape))
 
         # tensors with negative strides are not currently supported that's why have to use PIL and then have to apply transformations
-        raw_image = Image.fromarray(raw_image).convert("L") # convert to PIL Images for transformations
+        raw_image_flair = Image.fromarray(raw_image[:,:,0]).convert("L") # convert to PIL Images for transformations; apply for first slice channel because it is single slice of flair type image
+        raw_image_t1ce = Image.fromarray(raw_image[:,:,1]).convert("L") # convert to PIL Images for transformations; apply for second channel because it is single slice of t1ce type image
+        raw_image_t2 = Image.fromarray(raw_image[:,:,2]).convert("L") # convert to PIL Images for transformations; apply for third channel because it is single slice of t2 type image
         raw_mask = Image.fromarray(raw_mask).convert("L") # convert to PIL Images for transformations
 
         if self.transform:
             random_int = torch.randint(0, 3, (1,)).item() # generate a random integer between 0-2
             if random_int == 0:
-                image = raw_image # no augmentation techniques are applied
+                image_flair = raw_image_flair # no augmentation techniques are applied
+                image_t1ce = raw_image_t1ce # no augmentation techniques are applied
+                image_t2 = raw_image_t2 # no augmentation techniques are applied
                 mask = raw_mask # no augmentation techniques are applied
             elif random_int == 1:
-                image = np.flip(raw_image,axis=0) # flip alongside the first axis (vertical axis); horizontal flipping
+                image_flair = np.flip(raw_image_flair,axis=0) # flip alongside the first axis (vertical axis); horizontal flipping
+                image_t1ce = np.flip(raw_image_t1ce,axis=0) # flip alongside the first axis (vertical axis); horizontal flipping
+                image_t2 = np.flip(raw_image_t2,axis=0) # flip alongside the first axis (vertical axis); horizontal flipping
                 mask = np.flip(raw_mask,axis=0) # flip alongside the first axis (vertical axis); horizontal flipping
             elif random_int == 2:
-                image = np.flip(raw_image,axis=1) # flip alongside the first axis (horizontal axis); vertical flipping
+                image_flair = np.flip(raw_image_flair,axis=1) # flip alongside the first axis (horizontal axis); vertical flipping
+                image_t1ce = np.flip(raw_image_t1ce,axis=1) # flip alongside the first axis (horizontal axis); vertical flipping
+                image_t2 = np.flip(raw_image_t2,axis=1) # flip alongside the first axis (horizontal axis); vertical flipping
                 mask = np.flip(raw_mask,axis=1) # flip alongside the first axis (horizontal axis); vertical flipping
 
+        image = np.stack([image_flair,image_t1ce,image_t2],axis=0) # stack image after applying or not applying data augmentation; before data augmentation shape was (128,128,3) to (3,128,128)
+        
         # convert back to numpy arrays
         image = np.array(image)
         mask = np.array(mask)
@@ -187,7 +197,7 @@ class SegmentationDataset(Dataset):
         image = image.copy()
         mask = mask.copy()
 
-        image = torch.tensor(image, dtype=torch.float32).unsqueeze(0) # convert to torch tensors; .unsqueeze(0) used for add channel dimension
+        image = torch.tensor(image, dtype=torch.float32) # convert to torch tensors
         mask = torch.tensor(mask, dtype=torch.long) # convert to torch tensors
 
         return image, mask # return image and mask in the form of the tuple
