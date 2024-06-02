@@ -62,8 +62,8 @@ class Config():
         """
 
         print(f"Configurations:")
-        print(f"Current Working Directory: {self.CWD}, Trainset_path: {self.TRAINSET_PATH}, Validset_path: {self.VALIDSET_PATH}",
-              f"Train_image_path: {self.TRAIN_IMAGE_PATH}, Path_to_save_processed_data: {self.PATH_TO_SAVE_PROCESSED_DATA}",
-              f"Path_to_save_trained_model: {self.PATH_TO_SAVE_TRAINED_MODEL}, Batch_size: {self.BATCH_SIZE}, Max_epochs: {self.MAX_EPOCHS}",
+        print(f"Current Working Directory: {self.CWD}, Trainset_path: {self.TRAINSET_PATH}, Validset_path: {self.VALIDSET_PATH}, ",
+              f"Train_image_path: {self.TRAIN_IMAGE_PATH}, Path_to_save_processed_data: {self.PATH_TO_SAVE_PROCESSED_DATA}, ",
+              f"Path_to_save_trained_model: {self.PATH_TO_SAVE_TRAINED_MODEL}, Batch_size: {self.BATCH_SIZE}, Max_epochs: {self.MAX_EPOCHS}, ",
               f"Num_classes: {self.NUM_CLASSES}, Learning_rate: {self.LEARNING_RATE}, Trasform/Data_augmentation: {self.TRANSFORM}")
         
