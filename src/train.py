@@ -27,7 +27,7 @@ from nn_arch.mobilenetv3_large import MobileNetV3LargeUNet
 from nn_arch.cascaded_mobilenetv3_large import CascadedMobileNetV3LargeUNet
 from nn_arch.mobilenetv3_large_without_SEblock import MobileNetV3LargeUNet_Without_SEBlock
 from utils.utils import flipImageHorizontally, flipImageVertically, Z_Score_Normalization_forSingleSlice
-from utils.utils import Z_Score_Normalization_forImage, croppedImagePlot, available_models, save_trained_model
+from utils.utils import Z_Score_Normalization_forImage, croppedImagePlot, available_models, save_trained_model, available_optimizers
 
 
 
@@ -132,24 +132,25 @@ if __name__=='__main__':
     print("-------------------------------------------------")
 
     avail_models, user_choice = available_models() # get user choice for available models for training
-    print(f"- You have seleted {avail_models[user_choice]}")
+    avail_optim, user_choice_optim = available_optimizers() # get user choice for available optimizers for training
+    print(f"- You have selected {avail_optim[user_choice_optim]} optimizer with {avail_models[user_choice]} neural network architecture.")
 
     if user_choice == 0:
-        model = UNet(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE) # create a normal standard unet model
+        model = UNet(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE, optimizer=avail_optim[user_choice_optim]) # create a normal standard unet model
     elif user_choice == 1:
-        model = MobileNetV1UNet(num_classes=config.NUM_CLASSES,learning_rate=config.LEARNING_RATE) # create MobileNetV1 model
+        model = MobileNetV1UNet(num_classes=config.NUM_CLASSES,learning_rate=config.LEARNING_RATE, optimizer=avail_optim[user_choice_optim]) # create MobileNetV1 model
     elif user_choice == 2:
-        model = MobileNetV2UNet(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE) # create MobileNetV2 model
+        model = MobileNetV2UNet(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE, optimizer=avail_optim[user_choice_optim]) # create MobileNetV2 model
     elif user_choice == 3:
-        model = MobileNetV3SmallUNet(num_classes=config.NUM_CLASSES,learning_rate=config.LEARNING_RATE) # create MobileNetV3-Small model
+        model = MobileNetV3SmallUNet(num_classes=config.NUM_CLASSES,learning_rate=config.LEARNING_RATE, optimizer=avail_optim[user_choice_optim]) # create MobileNetV3-Small model
     elif user_choice == 4:
-        model = MobileNetV3LargeUNet(num_classes=config.NUM_CLASSES,learning_rate=config.LEARNING_RATE) # create MobileNetV3-Large model
+        model = MobileNetV3LargeUNet(num_classes=config.NUM_CLASSES,learning_rate=config.LEARNING_RATE, optimizer=avail_optim[user_choice_optim]) # create MobileNetV3-Large model
     elif user_choice == 5:
-        model = CascadedMobileNetV3LargeUNet(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE) # create Cascaded MobileNetV3-Large model
+        model = CascadedMobileNetV3LargeUNet(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE, optimizer=avail_optim[user_choice_optim]) # create Cascaded MobileNetV3-Large model
     elif user_choice == 6:
-        model = BoxUNet(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE) # create BoxUNet model
+        model = BoxUNet(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE, optimizer=avail_optim[user_choice_optim]) # create BoxUNet model
     elif user_choice == 7:
-        model = MobileNetV3LargeUNet_Without_SEBlock(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE) # create MobileNetV3-Large architecture without SE Block
+        model = MobileNetV3LargeUNet_Without_SEBlock(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE, optimizer=avail_optim[user_choice_optim]) # create MobileNetV3-Large architecture without SE Block
 
     # print("- Model summary:\n")
     # summary(model,(1,128,128)) # print model summary; input shape is extracted @ data loading time
