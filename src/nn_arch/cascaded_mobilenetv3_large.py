@@ -365,10 +365,11 @@ class MobileNetV3LargeUNet_Stage2(nn.Module):
         return out_resized
 
 class CascadedMobileNetV3LargeUNet(pl.LightningModule):
-    def __init__(self,num_classes,learning_rate) -> None:
+    def __init__(self,num_classes,learning_rate,optimizer) -> None:
         super(CascadedMobileNetV3LargeUNet,self).__init__()
         self.lr = learning_rate # set learning rate
         self.num_classes = num_classes # set output segmentation classes
+        self.optimizer = optimizer # set optimizer
 
         self.stage1 = MobileNetV3LargeUNet_Stage1(num_classes=self.num_classes)
         self.stage2 = MobileNetV3LargeUNet_Stage2(num_classes=self.num_classes)
@@ -552,6 +553,12 @@ class CascadedMobileNetV3LargeUNet(pl.LightningModule):
         return specificity.mean(dim=1), specificity[:,1], specificity[:,2], specificity[:3] # (mean over classes, label-1, label-2, label-3)
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=self.lr) # set optimizer and learning_rate
-        # return torch.optim.AdamW(self.parameters(),lr=self.lr) # set optimizer and learning rate
+        if self.optimizer == 'Adam':
+            return torch.optim.Adam(self.parameters(), lr=self.lr) # set optimizer and learning_rate
+        elif self.optimizer == 'AdamW':
+            return torch.optim.AdamW(self.parameters(),lr=self.lr) # set optimizer and learning rate
+        elif self.optimizer == 'RMSProp':
+            return torch.optim.RMSprop(self.parameters(), lr=self.lr) # set optimizer and learning rate
+        elif self.optimizer == 'SGD':
+            return torch.optim.SGD(self.parameters(), lr=self.lr) # set optimizer snd learning rate
     

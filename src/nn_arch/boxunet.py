@@ -13,10 +13,11 @@ import torch.nn.functional as F
 from torch import nn
 
 class BoxUNet(pl.LightningModule):
-    def __init__(self, num_classes, learning_rate):
+    def __init__(self, num_classes, learning_rate, optimizer):
 
         self.lr = learning_rate # set learning rate
         self.num_classes = num_classes # set output segmentation classes
+        self.optimizer = optimizer # set optimizer
         super(BoxUNet, self).__init__()
         
         # Encoder
@@ -311,5 +312,11 @@ class BoxUNet(pl.LightningModule):
         return specificity.mean(dim=1), specificity[:,1], specificity[:,2], specificity[:3] # (mean over classes, label-1, label-2, label-3)
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=self.lr) # set optimizer and learning_rate
-        # return torch.optim.AdamW(self.parameters(),lr=self.lr) # set optimizer and learning rate
+        if self.optimizer == 'Adam':
+            return torch.optim.Adam(self.parameters(), lr=self.lr) # set optimizer and learning_rate
+        elif self.optimizer == 'AdamW':
+            return torch.optim.AdamW(self.parameters(),lr=self.lr) # set optimizer and learning rate
+        elif self.optimizer == 'RMSProp':
+            return torch.optim.RMSprop(self.parameters(), lr=self.lr) # set optimizer and learning rate
+        elif self.optimizer == 'SGD':
+            return torch.optim.SGD(self.parameters(), lr=self.lr) # set optimizer snd learning rate
