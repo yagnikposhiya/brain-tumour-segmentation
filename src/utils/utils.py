@@ -611,3 +611,25 @@ def groundTruthVSPredicted_AllClasses(image: np.ndarray, groundtruth_mask: np.nd
     ax2.set_title(f"Image with predicted ROI, model: {model}")
 
     plt.show() # display the plots
+
+def available_optimizers() -> None:
+    """
+    This function is used to provide list of available optimizers for model training.
+
+    Parameters:
+    - (None)
+
+    Returns:
+    - (list,int): returns (available optimizers,user choice) tuple
+    """
+
+    optimizers = ['Adam',
+                  'AdamW',
+                  'RMSProp',
+                  'SGD'] # list of available optimizers
+    
+    print("Select any one optimizer from the list given below")
+    for i in range(len(optimizers)):
+        print(f"{i}_________{optimizers[i]}") # print list of available optimizers with integer optimizer number
+
+    return optimizers, get_user_choice(0,len(optimizers)-1) # get user choice
