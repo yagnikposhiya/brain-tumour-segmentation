@@ -16,11 +16,11 @@ class Config():
         self.TRAINSET_PATH = os.path.join(self.CWD,'data/raw/') # set training directory path
         self.PATH_TO_SAVE_PROCESSED_DATA = os.path.join(self.CWD,'data/') # set training directory path
         self.VALIDSET_PATH = os.path.join(self.CWD,'data/raw/') # set validation directory path
-        self.TRAIN_IMAGE_PATH =['unstructured/BraTS20_Training_001_flair.nii',
-                                'unstructured/BraTS20_Training_001_t1.nii',
-                                'unstructured/BraTS20_Training_001_t1ce.nii',
-                                'unstructured/BraTS20_Training_001_t2.nii',
-                                'unstructured/BraTS20_Training_001_seg.nii'] # set path for any images available in the train directory
+        self.TRAIN_IMAGE_PATH =['unstructured/BraTS20_Training_009_flair.nii',
+                                'unstructured/BraTS20_Training_009_t1.nii',
+                                'unstructured/BraTS20_Training_009_t1ce.nii',
+                                'unstructured/BraTS20_Training_009_t2.nii',
+                                'unstructured/BraTS20_Training_009_seg.nii'] # set path for any images available in the train directory
         
         # training and validation dataset path after storing dataset into .npy format
         self.TRAIN_IMAGES_DIR = '' # automatically set path for the directory contains stacked images in .npy format (training)
