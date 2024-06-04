@@ -48,21 +48,19 @@ def showAllTypesOfImages(trainset_path:str, image_name:list) -> None:
 
     fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(1, 5, figsize=(20,10)) # create figure contains 1 row 5 columns with 20*10 size of all figures.
 
-    SLICE_W = 25 # unknown variable
-
-    ax1.imshow(image_flair[:,:,image_flair.shape[0]//2-SLICE_W]) # visualize flair image
+    ax1.imshow(image_flair[:,:,75],cmap='gray') # visualize flair image
     ax1.set_title('Flair Image') # set title of a figure
 
-    ax2.imshow(image_t1[:,:,image_t1.shape[0]//2-SLICE_W]) # visualize t1 image
+    ax2.imshow(image_t1[:,:,75],cmap='gray') # visualize t1 image
     ax2.set_title('T1 Image') # set title of a figure
 
-    ax3.imshow(image_t1ce[:,:,image_t1ce.shape[0]//2-SLICE_W]) # visualize t1ce image
+    ax3.imshow(image_t1ce[:,:,75],cmap='gray') # visualize t1ce image
     ax3.set_title('T1CE Image') # set title of a figure
 
-    ax4.imshow(image_t2[:,:,image_t2.shape[0]//2-SLICE_W]) # visualize t2 image
+    ax4.imshow(image_t2[:,:,75],cmap='gray') # visualize t2 image
     ax4.set_title('T2 Image') # set title of a figure
 
-    ax5.imshow(image_mask[:,:,image_mask.shape[0]//2-SLICE_W]) # visualize mask image
+    ax5.imshow(image_mask[:,:,75],cmap='gray') # visualize mask image
     ax5.set_title('Mask Image') # set title of a figure
 
     plt.show() # display the plots
