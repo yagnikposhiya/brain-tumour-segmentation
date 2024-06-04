@@ -11,9 +11,12 @@ import numpy as np
 import nibabel as nib
 import pytorch_lightning as pl
 
+# import torchviz
+# import graphviz
+
 from config.config import Config
+from torchinfo import summary
 from nn_arch.unet import UNet
-from torchsummary import summary
 from nn_arch.boxunet import BoxUNet
 from brats2020 import prepareDataset
 from brats2020 import SegmentationDataModule
@@ -29,6 +32,7 @@ from nn_arch.mobilenetv3_large_without_SEblock import MobileNetV3LargeUNet_Witho
 from utils.utils import flipImageHorizontally, flipImageVertically, Z_Score_Normalization_forSingleSlice
 from utils.utils import Z_Score_Normalization_forImage, croppedImagePlot, available_models, save_trained_model, available_optimizers
 
+# from torchsummary import summary; old name is torchsummary, new name is torchinfo
 
 
 if __name__=='__main__':
@@ -152,9 +156,12 @@ if __name__=='__main__':
     elif user_choice == 7:
         model = MobileNetV3LargeUNet_Without_SEBlock(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE, optimizer=avail_optim[user_choice_optim]) # create MobileNetV3-Large architecture without SE Block
 
-    # print("- Model summary:\n")
-    # summary(model,(1,128,128)) # print model summary; input shape is extracted @ data loading time
-    # printing summary manually in the forward function
+    print("- Model summary:\n")
+    summary(model,input_size=(1,4,128,128),col_names=["input_size", "output_size", "kernel_size"]) # print model summary; input shape is extracted @ data loading time
+
+    # dummy_input = torch.randn(1,4,128,128) # create dummy input tensor
+    # dot = torchviz.make_dot(model(dummy_input), params=dict(model.named_parameters())) # create object of graph
+    # dot.render('unet_model', format='png', view=True) # print graph and save it into .png format
 
     model = model.to(device) # move model architecture to available computing device
     wandb_logger = WandbLogger(log_model=config.LOG_MODEL)
