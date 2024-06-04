@@ -6,3 +6,5 @@ lightning
 torch-summary
 matplotlib
 scikit-image
+torchviz
+torchinfo
