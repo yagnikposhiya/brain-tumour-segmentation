@@ -148,9 +148,9 @@ class MobileNetV1UNet(pl.LightningModule):
 
         # final output layer
         out = self.output_layer(dec1)
-        out_resized = F.interpolate(out, size=(128,128), mode='bilinear', align_corners=False)
+        # out_resized = F.interpolate(out, size=(128,128), mode='bilinear', align_corners=False)
 
-        return out_resized
+        return out
     
     def training_step(self, batch, batch_idx):
         images, masks = batch # load input images and mask images from a single-single batch
