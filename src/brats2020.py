@@ -205,6 +205,11 @@ class SegmentationDataset(Dataset):
         In the context of arrays and tensors, a stride represents the number of elements to skip in memory 
         to move to the next element along each dimension. Strides are crucial in understanding how multi-dimensional arrays 
         are laid out in memory and how to navigate through them.
+
+        When dealing with multi-dimensional arrays or tensors, data is stored in a contiguous block of memory. 
+        The stride helps to map the logical layout of the array to its physical layout in memory. 
+        It essentially tells you how many steps (in terms of memory locations) you need to take to move from one element to 
+        the next along a particular dimension.
         """
         image = image.copy()
         mask = mask.copy()
