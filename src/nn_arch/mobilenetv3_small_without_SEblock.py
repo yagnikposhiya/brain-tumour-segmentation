@@ -71,12 +71,12 @@ class InvertedResidualBlock(nn.Module):
         
         return out
     
-class MobileNetV3SmallUNet(pl.LightningModule):
+class MobileNetV3SmallUNet_Without_SEBlock(pl.LightningModule):
     def __init__(self,num_classes,learning_rate,optimizer) -> None:
         self.lr = learning_rate # set learning rate
         self.num_classes = num_classes # set output segmentation classes
         self.optimizer = optimizer # set optimizer
-        super(MobileNetV3SmallUNet,self).__init__()
+        super(MobileNetV3SmallUNet_Without_SEBlock,self).__init__()
 
         # encoder (mobilenetv3-small) input layer
         self.input_layer = nn.Sequential(
