@@ -530,52 +530,76 @@ def prepareImageForInference() -> torch.Tensor:
 
     while True:
         try:
-            image_path = str(input("Enter path where image file exists (with filename): "))# ask user to enter image path
-            mask_path = str(input("Enter path where mask file exists (with filename): ")) # ask user to enter mask path
+            image_directory_path = str(input("Enter path where image file exists (without filename): "))# ask user to enter path for directory
 
-            print("Preparing image/mask for inference...")
+            if (os.path.exists(image_directory_path)):
+                flair_image_path = os.path.join(image_directory_path,f"{os.path.basename(image_directory_path)}_flair.nii") # set path for flair image
+                t1_image_path = os.path.join(image_directory_path,f"{os.path.basename(image_directory_path)}_t1.nii") # set path for t1 image
+                t1ce_image_path = os.path.join(image_directory_path,f"{os.path.basename(image_directory_path)}_t1ce.nii") # set path for t1ce image
+                t2_image_path = os.path.join(image_directory_path,f"{os.path.basename(image_directory_path)}_t2.nii") # set path for t2 image
 
-            if (not os.path.exists(image_path) or (not os.path.exists(mask_path))): # check whether image file is exist or not
-                print(f"The file either {image_path} or {mask_path} does not exist.")
-                return None
-            
-            elif (os.path.exists(image_path) and os.path.exists(mask_path)) and (os.path.isfile(image_path) and os.path.isfile(mask_path)):
-                image = nib.load(image_path).get_fdata() # load input image
-                Z_Score_Normalization(image) # apply z-score normalization to image
+                mask_image_path = os.path.join(image_directory_path,f"{os.path.basename(image_directory_path)}_seg.nii") # set path for mask image
 
-                mask = nib.load(mask_path).get_fdata() # load mask 
+                if (os.path.exists(flair_image_path)) and (os.path.exists(t1_image_path)) and (os.path.exists(t2_image_path)) and (os.path.exists(t1ce_image_path)) and (os.path.exists(mask_image_path)): # check whether all images exist or not
 
-                image = image[56:184, 56:184, 13:141] # crop image and transform image shape to (128,128,128)
-                mask = mask[56:184, 56:184, 13:141] # crop mask and transform mask shape to (128,128,128)
+                    print("Preparing image/mask for inference...")
 
-                image = image[:,:,62] # select only single slice from an image
-                mask = mask[:,:,62] # select only single slice from mask
-                mask = mask.astype(np.uint8) # change the data type
-                print(f"- Grountruth mask unique before label changing: {np.unique(mask)}")
-                mask [mask == 4] = 3 # reassign mask value 4 to 3
-                print(f"- Grountruth mask unique after label changing: {np.unique(mask)}")
+                    flair_image = nib.load(flair_image_path).get_fdata() # load flair image
+                    t1_image = nib.load(t1_image_path).get_fdata() # load t1 image
+                    t1ce_image = nib.load(t1ce_image_path).get_fdata() # load t1ce image
+                    t2_image = nib.load(t2_image_path).get_fdata() # load t2 image
 
+                    mask_image = nib.load(mask_image_path).get_fdata() # load mask image
 
-                np_image = image # copy image which is in numpy format
-                np_mask = mask # copy mask which is in numpy format
+                    flair_image = flair_image[56:184, 56:184, 13:141] # crop flair image and shape is (128,128,128)
+                    t1_image = t1_image[56:184, 56:184, 13:141] # crop t1 image and shape is (128,128,128)
+                    t1ce_image = t1ce_image[56:184, 56:184, 13:141] # crop t1ce and shape is (128,128,128)
+                    t2_image = t2_image[56:184, 56:184, 13:141] # crop t2 image and shape is (128,128,128)
+                    mask_image = mask_image[56:184, 56:184, 13:141] # crop mask image and shape is (128,128,128)
 
-                image = np.expand_dims(image,axis=0) # add channel dimension to make the shape (1,128,128)
+                    slice_no = get_user_choice(0, flair_image.shape[0]) # give freedom to user to select a slice index
 
-                print(f"- Shape image before converting into torch.tensor: {image.shape}")
-                print(f"- Shape mask before converting into torch.tensor: {np_mask.shape}")
+                    flair_image = flair_image[:,:,slice_no] # select only single slice from an image
+                    t1_image = t1_image[:,:,slice_no] # select only single slice from an image
+                    t1ce_image = t1ce_image[:,:,slice_no] # select only single slice from an image
+                    t2_image = t2_image[:,:,slice_no] # select only single slice from an image
+                    mask_image = mask_image[:,:,slice_no] # select only single slice from an image
+                    mask_image = mask_image.astype(np.uint8) # change the data type
 
-                image = torch.tensor(image, dtype=torch.float32).unsqueeze(0) # convert numpy array into torch tensor and add batch dimension to an image
-                mask = torch.tensor(mask,dtype=torch.long) # convert to torch tensor
+                    print(f"- Grountruth mask unique before label changing: {np.unique(mask_image)}")
+                    mask_image [mask_image == 4] = 3 # reassign mask value 4 to 3
+                    print(f"- Grountruth mask unique after label changing: {np.unique(mask_image)}")
 
-                print(f"- Shape image after converting into torch.tensor: {image.shape}")
+                    np_mask_image = mask_image # copy mask image which is in numpy format
 
-                return image, mask, np_image, np_mask
-            
+                    stacked_image = np.stack([flair_image,t1_image,t1ce_image,t2_image], axis=0) # create a stack image of shape (4,128,128)
+                    image = torch.tensor(stacked_image,dtype=torch.float32).unsqueeze(0) # convert numpy array into torch tensor and add batch dimension to an image
+                    mask = torch.tensor(mask_image,dtype=torch.long) # convert to a torch tensor
+
+                    return image, mask, flair_image, np_mask_image
+
+                else:
+                    if (not os.path.exists(flair_image_path)): # check whether flair image exists or not
+                        print(f"The file {flair_image_path} does not exist.")
+                        return None
+                    elif (not os.path.exists(t1_image_path)): # check whether t1 image exists or not
+                        print(f"The file {t1_image_path} does not exist.")
+                        return None
+                    elif (not os.path.exists(t1ce_image_path)): # check whether t1ce image exists or not
+                        print(f"The file {t1ce_image_path} does not exist.")
+                        return None
+                    elif (not os.path.exists(t2_image_path)): # check whether t2 image exists or not
+                        print(f"The file {t2_image_path} does not exist.")
+                        return None
+                    else: # mask image does not exist
+                        print(f"The file {mask_image_path} does not exist.")
+                        return None
             else:
-                print(f"Is a directory: either {image_path} or {mask_path}")
+                print(f"The directory {image_directory_path} does not exist.")
+                return None
 
         except ValueError:
-            print(f"The file either {image_path} or {mask_path} does not exist.")
+            print(f"The directory {image_directory_path} does not exist.")
 
 
 def groundTruthVSPredicted_AllClasses(image: np.ndarray, groundtruth_mask: np.ndarray, predicted_mask:np.ndarray, model:str) -> None:
