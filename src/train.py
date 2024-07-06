@@ -177,10 +177,10 @@ if __name__=='__main__':
     trainer.fit(model,data_module) # train the normal standard unet model
     print("Training finished.")
 
+    wandb.finish() # close the weights and biases cloud instance
+
     print("-------------------------------------------------")
     print("-------------- SAVE TRAINED MODEL ---------------")
     print("-------------------------------------------------")
     print("Saving trained model...")
     save_trained_model(model=model, model_prefix=avail_models[user_choice], path=config.PATH_TO_SAVE_TRAINED_MODEL) # save trained model
-
-    wandb.finish() # close the weights and biases cloud instance
