@@ -438,7 +438,8 @@ def available_models() -> None:
               'MobileNetV3UNet (large)',
               'Cascaded MobileNetV3UNet (large)',
               'BoxUNet',
-              'MobileNetV3UNet (large) without SE Block'] # list of available models
+              'MobileNetV3UNet (large) without SE Block',
+              'MobileNetV3UNet (small) without SE Block'] # list of available models
     
     print("Select any one neural network architecture from the list given below")
     for i in range(len(models)):
@@ -481,7 +482,7 @@ def save_trained_model(model, model_prefix: str, path: str) -> None:
     torch.save(model.state_dict(),os.path.join(path,f"{model_prefix}_{model_name_from_user}.pth")) # save the at specified path and specified name
     print(f"Trained model is successfully saved at: \n{os.path.join(path,f"{model_prefix}_{model_name_from_user}.pth")}")
 
-def load_saved_model(model_class,num_classes,learning_rate) -> torch.any:
+def load_saved_model(model_class,num_classes,learning_rate, optimizer) -> torch.any:
     """
     This function is used to load saved trained models.
     
@@ -489,6 +490,7 @@ def load_saved_model(model_class,num_classes,learning_rate) -> torch.any:
     - model_class (any): model class
     - num_classes (int) : number of segmentation classes
     - learning_rate (float): learning rate
+    - optimizer (str): optimizer
 
     Returns:
     - (None)
@@ -504,7 +506,7 @@ def load_saved_model(model_class,num_classes,learning_rate) -> torch.any:
                 return None
             
             elif os.path.exists(model_path) and os.path.isfile(model_path):
-                model = model_class(num_classes=num_classes,learning_rate=learning_rate) # initiailze model class
+                model = model_class(num_classes=num_classes,learning_rate=learning_rate,optimizer=optimizer) # initiailze model class
                 model.load_state_dict(torch.load(model_path)) # load the saved state dictionary
                 # model.eval() # set the model to evaluation mode
                 return model
