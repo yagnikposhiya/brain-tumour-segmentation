@@ -25,6 +25,7 @@ from gpu_config.check import check_gpu_config
 from nn_arch.mobilenetv1 import MobileNetV1UNet
 from nn_arch.mobilenetv2 import MobileNetV2UNet
 from pytorch_lightning.loggers import WandbLogger
+from pytorch_lightning.callbacks import EarlyStopping
 from nn_arch.mobilenetv3_small import MobileNetV3SmallUNet
 from nn_arch.mobilenetv3_large import MobileNetV3LargeUNet
 from nn_arch.cascaded_mobilenetv3_large import CascadedMobileNetV3LargeUNet
@@ -142,22 +143,31 @@ if __name__=='__main__':
 
     if user_choice == 0:
         model = UNet(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE, optimizer=avail_optim[user_choice_optim]) # create a normal standard unet model
+        monitor_loss = 'unet_valid_loss' # set string value same as set in model configuration
     elif user_choice == 1:
         model = MobileNetV1UNet(num_classes=config.NUM_CLASSES,learning_rate=config.LEARNING_RATE, optimizer=avail_optim[user_choice_optim]) # create MobileNetV1 model
+        monitor_loss = 'mobilenetv1_valid_loss' # set string value same as set in model configuration
     elif user_choice == 2:
         model = MobileNetV2UNet(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE, optimizer=avail_optim[user_choice_optim]) # create MobileNetV2 model
+        monitor_loss = 'mobilenetv2_valid_loss' # set string value same as set in model configuration
     elif user_choice == 3:
         model = MobileNetV3SmallUNet(num_classes=config.NUM_CLASSES,learning_rate=config.LEARNING_RATE, optimizer=avail_optim[user_choice_optim]) # create MobileNetV3-Small model
+        monitor_loss = 'mobilenetv3_small_valid_loss' # set string value same as set in model configuration
     elif user_choice == 4:
         model = MobileNetV3LargeUNet(num_classes=config.NUM_CLASSES,learning_rate=config.LEARNING_RATE, optimizer=avail_optim[user_choice_optim]) # create MobileNetV3-Large model
+        monitor_loss = 'mobilenetv3_large_valid_loss' # set string value same as set in model configuration
     elif user_choice == 5:
         model = CascadedMobileNetV3LargeUNet(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE, optimizer=avail_optim[user_choice_optim]) # create Cascaded MobileNetV3-Large model
+        monitor_loss = 'cascaded_mobilenetv3_large_valid_loss' # set string value same as set in model configuration
     elif user_choice == 6:
         model = BoxUNet(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE, optimizer=avail_optim[user_choice_optim]) # create BoxUNet model
+        monitor_loss = 'boxunet_valid_loss' # set string value same as set in model configuration
     elif user_choice == 7:
         model = MobileNetV3LargeUNet_Without_SEBlock(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE, optimizer=avail_optim[user_choice_optim]) # create MobileNetV3-Large architecture without SE Block
+        monitor_loss = 'mobilenetv3_large_without_SE_valid_loss' # set string value same as set in model configuration
     elif user_choice == 8:
         model = MobileNetV3SmallUNet_Without_SEBlock(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE, optimizer=avail_optim[user_choice_optim]) # create MobileNetV3-Small architecture without SE Block
+        monitor_loss = 'mobilenetv3_small_without_SE_valid_loss' # set string value same as set in model configuration
         
     print("- Model summary:\n")
     summary(model,input_size=(1,4,128,128),col_names=["input_size", "output_size", "kernel_size"]) # print model summary; input shape is extracted @ data loading time
@@ -168,7 +178,14 @@ if __name__=='__main__':
 
     model = model.to(device) # move model architecture to available computing device
     wandb_logger = WandbLogger(log_model=config.LOG_MODEL)
-    trainer = pl.Trainer(max_epochs=config.MAX_EPOCHS, log_every_n_steps=1, logger=wandb_logger) # set the maxium number of epochs; saving a training logs at every step
+
+    # initialize early stopping callback
+    early_stopping_callback = EarlyStopping(
+        monitor=monitor_loss, # any other metric, is being monitored
+        patience=10, # number of epochs with no improvements after which training will be stopped
+        mode='min' # 'min' because want to stop when loss stops decreasing
+    )
+    trainer = pl.Trainer(max_epochs=config.MAX_EPOCHS, log_every_n_steps=1, logger=wandb_logger, callbacks=early_stopping_callback) # set the maxium number of epochs; saving a training logs at every step; also applied early stopping
 
     print("-------------------------------------------------")
     print("------- NN ARCHITECTURE (MODEL) TRAINING --------")
