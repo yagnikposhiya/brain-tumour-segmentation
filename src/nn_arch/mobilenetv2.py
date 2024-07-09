@@ -1,7 +1,7 @@
 """
 author: Yagnik Poshiya
 github: @yagnikposhiya
-organization: NEUROWORK Research Labs
+organization: Neurowork Research Labs
 """
 
 """
