@@ -41,13 +41,6 @@ class Config():
         self.PROJECT = 'NRL-brain-tumour-segmentation' # set project name
         self.REINIT = True # set boolean value for reinitialization
         self.ANONYMOUS = 'allow' # set anonymous value type
-        self.GROUP = [
-            'Standard-UNet',
-            'MobileNetV1',
-            'MobileNetV2',
-            'MobileNetV3 (small)',
-            'MobileNetV3 (large)'
-        ] # set group name
         self.LOG_MODEL = 'all' # set log model type
 
     def printConfiguration(self):
