@@ -1,7 +1,7 @@
 """
 author: Yagnik Poshiya
 github: @yagnikposhiya
-organization: NEUROWORK Research Labs
+organization: Neurowork Research Labs
 """
 import matplotlib
 matplotlib.use('TkAgg')  # or 'Qt5Agg' or any other backend that supports interactive display
