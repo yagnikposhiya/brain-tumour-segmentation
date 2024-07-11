@@ -29,6 +29,7 @@ from pytorch_lightning.callbacks import EarlyStopping
 from nn_arch.mobilenetv3_small import MobileNetV3SmallUNet
 from nn_arch.mobilenetv3_large import MobileNetV3LargeUNet
 from nn_arch.cascaded_mobilenetv3_large import CascadedMobileNetV3LargeUNet
+from nn_arch.cascaded_mobilenetv3_large_MHA import CascadedMobileNetV3LargeUNet_WithMHA
 from nn_arch.mobilenetv3_large_without_SEblock import MobileNetV3LargeUNet_Without_SEBlock
 from nn_arch.mobilenetv3_small_without_SEblock import MobileNetV3SmallUNet_Without_SEBlock
 from utils.utils import flipImageHorizontally, flipImageVertically, Z_Score_Normalization_forSingleSlice
@@ -168,6 +169,9 @@ if __name__=='__main__':
     elif user_choice == 8:
         model = MobileNetV3SmallUNet_Without_SEBlock(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE, optimizer=avail_optim[user_choice_optim]) # create MobileNetV3-Small architecture without SE Block
         monitor_loss = 'mobilenetv3_small_without_SE_valid_loss' # set string value same as set in model configuration
+    elif user_choice == 9:
+        model = CascadedMobileNetV3LargeUNet_WithMHA(num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE, optimizer=avail_optim[user_choice_optim]) # create Cascaded MobileNetV3-Large with MHA mechanism architecture
+        monitor_loss = 'cascaded_mobilenetv3_large_with_MHA_valid_loss' # set string value same as set in model configuration
         
     print("- Model summary:\n")
     summary(model,input_size=(1,4,128,128),col_names=["input_size", "output_size", "kernel_size"]) # print model summary; input shape is extracted @ data loading time
