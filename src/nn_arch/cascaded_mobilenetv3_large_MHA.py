@@ -47,7 +47,7 @@ class InvertedResidualBlock(nn.Module):
         if activation == 'HS':
             activation_layer = HSwish()
         elif activation == 'MH':
-            activation_layer = nn.MultiheadAttention(inplace=True)
+            activation_layer = nn.MultiheadAttention()
         else:
             activation_layer = nn.ReLU(inplace=True)
 
