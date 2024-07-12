@@ -37,43 +37,104 @@ class SEBlock(nn.Module):
         return x * scale
     
 class InvertedResidualBlock(nn.Module):
-    def __init__(self,in_channels,out_channels,kernel_size,stride,expand_ratio,use_se=True,activation='HS') -> None:
-        super(InvertedResidualBlock,self).__init__()
+    def __init__(self, in_channels, out_channels, kernel_size, stride, expand_ratio, use_se=True, activation='HS'):
+        super(InvertedResidualBlock, self).__init__()
 
-        self.stride = stride # set stride value
-        self.use_res_connect = (self.stride == 1 and in_channels == out_channels) # set boolean value for creating residual connection
-        hidden_dim = int(in_channels * expand_ratio) # set hidden dimension
+        self.stride = stride  # set stride value
+        self.use_res_connect = (self.stride == 1 and in_channels == out_channels)  # set boolean value for creating residual connection
+        hidden_dim = int(in_channels * expand_ratio)  # set hidden dimension
 
+        self.activation = activation
         if activation == 'HS':
             activation_layer = HSwish()
+            self.expand_conv = nn.Sequential(
+                nn.Conv2d(in_channels, hidden_dim, kernel_size=1, stride=1, padding=0, bias=False),
+                nn.BatchNorm2d(hidden_dim),
+                activation_layer
+            )
+
+            self.depthwise_conv = nn.Sequential(
+                nn.Conv2d(hidden_dim, hidden_dim, kernel_size=kernel_size, stride=stride, padding=kernel_size // 2, groups=hidden_dim, bias=False),
+                nn.BatchNorm2d(hidden_dim),
+                activation_layer
+            )
+
+            self.se = SEBlock(hidden_dim) if use_se else nn.Identity()
+
+            self.project_conv = nn.Sequential(
+                nn.Conv2d(hidden_dim, out_channels, kernel_size=1, stride=1, padding=0, bias=False),
+                nn.BatchNorm2d(out_channels)
+            )
         elif activation == 'MH':
-            activation_layer = nn.MultiheadAttention()
+            self.expand_conv = nn.Sequential(
+                nn.Conv2d(in_channels, hidden_dim, kernel_size=1, stride=1, padding=0, bias=False),
+                nn.BatchNorm2d(hidden_dim)
+            )
+
+            self.depthwise_conv = nn.Sequential(
+                nn.Conv2d(hidden_dim, hidden_dim, kernel_size=kernel_size, stride=stride, padding=kernel_size // 2, groups=hidden_dim, bias=False),
+                nn.BatchNorm2d(hidden_dim)
+            )
+
+            self.se = SEBlock(hidden_dim) if use_se else nn.Identity()
+
+            self.project_conv = nn.Sequential(
+                nn.Conv2d(hidden_dim, out_channels, kernel_size=1, stride=1, padding=0, bias=False),
+                nn.BatchNorm2d(out_channels)
+            )
+
+            self.mha1 = nn.MultiheadAttention(hidden_dim, num_heads=hidden_dim)  # Set num_heads as needed
+            self.mha2 = nn.MultiheadAttention(hidden_dim, num_heads=hidden_dim)  # Set num_heads as needed
+
         else:
             activation_layer = nn.ReLU(inplace=True)
+            self.expand_conv = nn.Sequential(
+                nn.Conv2d(in_channels, hidden_dim, kernel_size=1, stride=1, padding=0, bias=False),
+                nn.BatchNorm2d(hidden_dim),
+                activation_layer
+            )
 
-        self.expand_conv = nn.Sequential(
-            nn.Conv2d(in_channels,hidden_dim,kernel_size=1,stride=1,padding=0,bias=False),
-            nn.BatchNorm2d(hidden_dim),
-            activation_layer
-        )
+            self.depthwise_conv = nn.Sequential(
+                nn.Conv2d(hidden_dim, hidden_dim, kernel_size=kernel_size, stride=stride, padding=kernel_size // 2, groups=hidden_dim, bias=False),
+                nn.BatchNorm2d(hidden_dim),
+                activation_layer
+            )
 
-        self.depthwise_conv = nn.Sequential(
-            nn.Conv2d(hidden_dim,hidden_dim,kernel_size=kernel_size,stride=stride,padding=kernel_size//2,groups=hidden_dim,bias=False),
-            nn.BatchNorm2d(hidden_dim),
-            activation_layer
-        )
+            self.se = SEBlock(hidden_dim) if use_se else nn.Identity()
 
-        self.se = SEBlock(hidden_dim) if use_se else nn.Identity()
+            self.project_conv = nn.Sequential(
+                nn.Conv2d(hidden_dim, out_channels, kernel_size=1, stride=1, padding=0, bias=False),
+                nn.BatchNorm2d(out_channels)
+            )
 
-        self.project_conv = nn.Sequential(
-            nn.Conv2d(hidden_dim,out_channels,kernel_size=1,stride=1,padding=0,bias=False),
-            nn.BatchNorm2d(out_channels)
-        )
-
-    def forward(self,x):
+    def forward(self, x):
         identity = x
         out = self.expand_conv(x)
+        
+        if self.activation == 'MH':
+            # Prepare query, key, value for MultiheadAttention
+            batch_size, hidden_dim, height, width = out.size()
+            out = out.view(batch_size, hidden_dim, -1)  # (batch_size, hidden_dim, height * width)
+            out = out.permute(2, 0, 1)  # (height * width, batch_size, hidden_dim)
+
+            attn_output, _ = self.mha1(out, out, out)  # (height * width, batch_size, hidden_dim)
+            attn_output = attn_output.permute(1, 2, 0)  # (batch_size, hidden_dim, height * width)
+            attn_output = attn_output.view(batch_size, hidden_dim, height, width)  # (batch_size, hidden_dim, height, width)
+            out = attn_output
+        
         out = self.depthwise_conv(out)
+
+        if self.activation == 'MH':
+            # Prepare query, key, value for MultiheadAttention
+            batch_size, hidden_dim, height, width = out.size()
+            out = out.view(batch_size, hidden_dim, -1)  # (batch_size, hidden_dim, height * width)
+            out = out.permute(2, 0, 1)  # (height * width, batch_size, hidden_dim)
+
+            attn_output, _ = self.mha2(out, out, out)  # (height * width, batch_size, hidden_dim)
+            attn_output = attn_output.permute(1, 2, 0)  # (batch_size, hidden_dim, height * width)
+            attn_output = attn_output.view(batch_size, hidden_dim, height, width)  # (batch_size, hidden_dim, height, width)
+            out = attn_output
+        
         out = self.se(out)
         out = self.project_conv(out)
 
@@ -81,6 +142,72 @@ class InvertedResidualBlock(nn.Module):
             out += identity
         
         return out
+    
+"""
+Step-by-Step Explanation:
+[1] if self.activation == 'MH': (Checking Activation Type)
+Purpose: This condition checks if the activation function for the block is set to 'MH', which stands for Multi-Head Attention.
+Context: This block of code will only execute if the specified activation function is Multi-Head Attention.
+
+[2] batch_size, hidden_dim, height, width = out.size() (Retrieving Tensor Dimensions)
+Purpose: Extract the dimensions of the tensor out.
+Details:
+    batch_size: The number of samples in the batch.
+    hidden_dim: The number of feature maps (channels) in the tensor.
+    height: The height of each feature map.
+    width: The width of each feature map.
+Context: These dimensions are needed to reshape the tensor for the Multi-Head Attention mechanism.
+
+[3] out = out.view(batch_size, hidden_dim, -1)  # (batch_size, hidden_dim, height * width) (Reshaping the Tensor)
+Purpose: Flatten the spatial dimensions (height and width) into a single dimension.
+Details:
+    The view method is used to reshape the tensor.
+    The resulting shape is (batch_size, hidden_dim, height * width).
+Context: This reshaping is necessary to prepare the tensor for Multi-Head Attention, which expects inputs of shape (seq_len, batch_size, embed_dim).
+
+[4] out = out.permute(2, 0, 1)  # (height * width, batch_size, hidden_dim) (Permuting the Tensor)
+Purpose: Change the order of dimensions in the tensor.
+Details:
+    permute reorders the dimensions of the tensor.
+    The resulting shape is (height * width, batch_size, hidden_dim), where height * width is treated as the sequence length (seq_len).
+Context: The Multi-Head Attention mechanism in PyTorch (nn.MultiheadAttention) expects inputs with this specific order of dimensions.
+
+[5] attn_output, _ = self.mha2(out, out, out)  # (height * width, batch_size, hidden_dim) (Applying Multi-Head Attention)
+Purpose: Apply the Multi-Head Attention mechanism.
+Details:
+    self.mha2 is an instance of nn.MultiheadAttention.
+    It takes three arguments: query, key, and value. Here, all three are set to out, meaning self-attention is applied.
+    The output attn_output has the same shape as the input, which is (height * width, batch_size, hidden_dim).
+Context: Multi-Head Attention computes attention weights for each position in the sequence and combines the information from all positions.
+
+[6] attn_output = attn_output.permute(1, 2, 0)  # (batch_size, hidden_dim, height * width) (Permuting the Tensor Back)
+Purpose: Reorder the dimensions of the tensor back to the previous format.
+Details:
+    permute reorders the dimensions of the tensor.
+    The resulting shape is (batch_size, hidden_dim, height * width).
+Context: This step is necessary to return to a format suitable for further processing in the neural network.
+
+[7] attn_output = attn_output.view(batch_size, hidden_dim, height, width)  # (batch_size, hidden_dim, height, width) (Reshaping the Tensor Back)
+Purpose: Reshape the tensor back to its original spatial dimensions.
+Details:
+    The view method reshapes the tensor back to (batch_size, hidden_dim, height, width).
+Context: This final reshaping returns the tensor to its original shape, making it compatible with subsequent layers in the model.
+
+[8] out = attn_output (Assigning the Output)
+Purpose: Update the tensor out with the result from the Multi-Head Attention mechanism.
+Context: This completes the processing for the Multi-Head Attention activation.
+
+Abstarct - Summary:
+
+    Check Activation: The block executes only if the activation is Multi-Head Attention ('MH').
+    Dimension Extraction: The tensor dimensions are extracted to facilitate reshaping.
+    Reshape and Permute: The tensor is reshaped and permuted to match the expected input format for nn.MultiheadAttention.
+    Apply Attention: Multi-Head Attention is applied using the reshaped tensor.
+    Reshape Back: The tensor is permuted and reshaped back to its original format.
+    Update Output: The output tensor is updated with the attention mechanism's result.
+
+This process allows the InvertedResidualBlock to utilize the Multi-Head Attention mechanism while ensuring the tensor remains compatible with the rest of the model's layers.
+"""
     
 class MobileNetV3LargeUNet_Stage1(nn.Module):
     def __init__(self,num_classes) -> None:
