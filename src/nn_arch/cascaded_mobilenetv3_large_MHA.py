@@ -83,8 +83,8 @@ class InvertedResidualBlock(nn.Module):
                 nn.BatchNorm2d(out_channels)
             )
 
-            self.mha1 = nn.MultiheadAttention(hidden_dim, num_heads=hidden_dim)  # Set num_heads as needed
-            self.mha2 = nn.MultiheadAttention(hidden_dim, num_heads=hidden_dim)  # Set num_heads as needed
+            self.mha1 = nn.MultiheadAttention(hidden_dim, num_heads=128)  # Set num_heads as needed
+            self.mha2 = nn.MultiheadAttention(hidden_dim, num_heads=128)  # Set num_heads as needed
 
         else:
             activation_layer = nn.ReLU(inplace=True)
