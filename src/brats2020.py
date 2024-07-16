@@ -13,8 +13,12 @@ import pytorch_lightning as pl
 
 from PIL import Image
 from typing import Any
+from config.config import Config
 from utils.utils import Z_Score_Normalization
+from utils.utils import showAllTypesOfImages_fromArray
 from torch.utils.data import Dataset, DataLoader, random_split
+
+config = Config() # create an instance of Config() class
 
 def prepareDataset(path:str,path_to_save_processed_data:str ,directory:str) -> str:
     """
@@ -110,7 +114,12 @@ def prepareDataset(path:str,path_to_save_processed_data:str ,directory:str) -> s
                 # np.save(f'{path_to_save_processed_data}/processed/{directory}/masks/mask_{str(image_index)}.npy', crop_mask) # save crop mask to specified directory
             else:
                 print("Image and Mask both are ignored.")
-            
+                if config.VISUALIZE_IGNORED_XY_PAIR: # if true then visualize o.w. no visualization
+                    for i in range(128):
+                        values, counts_ignored = np.unique(crop_mask[:,:,i], return_counts=True) 
+                        if (1-(counts_ignored[0]/counts_ignored.sum())) < 0.01: # check out of 128 mask frames, how many frames contains tumor portion less than 1%
+                            showAllTypesOfImages_fromArray(flair_crop_image[:,:,i], t1_crop_image[:,:,i], t1ce_crop_image[:,:,i], t2_crop_image[:,:,i], crop_mask[:,:,i]) # visualize what ignored mask and images contain
+                
         else: # if directory is "validation" directory
             if not os.path.exists(f'{path_to_save_processed_data}/processed'): # check if processed directory exists or not
                 os.makedirs(f'{path_to_save_processed_data}/processed') # if not then create it
