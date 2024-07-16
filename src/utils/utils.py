@@ -65,6 +65,41 @@ def showAllTypesOfImages(trainset_path:str, image_name:list) -> None:
 
     plt.show() # display the plots
 
+def showAllTypesOfImages_fromArray(image_flair:np.ndarray, image_t1:np.ndarray, image_t1ce:np.ndarray, image_t2:np.ndarray, image_mask:np.ndarray) -> None:
+    """
+    This function is used to visualize the all types of fmri images which contains <1% of tumor part in whole image.
+    Those types are flair, t1, t1ce, t2, and mask image
+
+    Parameters:
+    - image_flair (np.ndarray): flair image modality
+    - image_t1 (np.ndarray): t1 image modality
+    - image_t1ce (np.ndarray): t1ce image modality
+    - image_t2 (np.ndarray): t2 image modality
+    - image_mask (np.ndarray): mask image modality
+
+    Returns:
+    - (None)
+    """
+
+    fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(1, 5, figsize=(20,10)) # create figure contains 1 row 5 columns with 20*10 size of all figures.
+
+    ax1.imshow(image_flair) # visualize flair image
+    ax1.set_title('Flair Image') # set title of a figure
+
+    ax2.imshow(image_t1) # visualize t1 image
+    ax2.set_title('T1 Image') # set title of a figure
+
+    ax3.imshow(image_t1ce) # visualize t1ce image
+    ax3.set_title('T1CE Image') # set title of a figure
+
+    ax4.imshow(image_t2) # visualize t2 image
+    ax4.set_title('T2 Image') # set title of a figure
+
+    ax5.imshow(image_mask) # visualize mask image
+    ax5.set_title('Mask Image') # set title of a figure
+
+    plt.show() # display the plots
+
 def createMontage(trainset_path:str, image_name:str) -> None:
     """
     This function is used to create montage of a nifti image.
