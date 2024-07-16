@@ -64,13 +64,14 @@ if __name__=='__main__':
 
     print("Applying Z-Score Normalization ...")
     normalized_flair_image = Z_Score_Normalization_forImage(config.TRAINSET_PATH,config.TRAIN_IMAGE_PATH[0]) # apply z-score normalization on whole flair image array
+    normalized_t1_image = Z_Score_Normalization_forImage(config.TRAINSET_PATH,config.TRAIN_IMAGE_PATH[1]) # apply z-score normalization on whole t1 image array
     normalized_t1ce_image = Z_Score_Normalization_forImage(config.TRAINSET_PATH,config.TRAIN_IMAGE_PATH[2]) # apply z-score normalization on whole t1ce image array
     normalized_t2_image = Z_Score_Normalization_forImage(config.TRAINSET_PATH,config.TRAIN_IMAGE_PATH[3]) # apply z-score normalization on whole t2 image array
     # t1 type image is not included because it does not contain rich information related to brain tumour
     print("Z-Score Normalization is applied successfully.")
 
     print("Stacking Flair, T1CE, and T2 type images...")
-    stack_image = np.stack([normalized_flair_image,normalized_t1ce_image,normalized_t2_image], axis=3) # create new axis and stack all normalized images
+    stack_image = np.stack([normalized_flair_image,normalized_t1_image,normalized_t1ce_image,normalized_t2_image], axis=3) # create new axis and stack all normalized images
     print("- Shape of stacked image: {}".format(stack_image.shape)) # shape of stacked image; i.e. (240,240,155,3)
     print("Stacked Flair, T1CE, and T2 type images.")
 
