@@ -48,19 +48,19 @@ def showAllTypesOfImages(trainset_path:str, image_name:list) -> None:
 
     fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(1, 5, figsize=(20,10)) # create figure contains 1 row 5 columns with 20*10 size of all figures.
 
-    ax1.imshow(image_flair[:,:,75],cmap='gray') # visualize flair image
+    ax1.imshow(image_flair[:,:,95]) # visualize flair image
     ax1.set_title('Flair Image') # set title of a figure
 
-    ax2.imshow(image_t1[:,:,75],cmap='gray') # visualize t1 image
+    ax2.imshow(image_t1[:,:,95]) # visualize t1 image
     ax2.set_title('T1 Image') # set title of a figure
 
-    ax3.imshow(image_t1ce[:,:,75],cmap='gray') # visualize t1ce image
+    ax3.imshow(image_t1ce[:,:,95]) # visualize t1ce image
     ax3.set_title('T1CE Image') # set title of a figure
 
-    ax4.imshow(image_t2[:,:,75],cmap='gray') # visualize t2 image
+    ax4.imshow(image_t2[:,:,95]) # visualize t2 image
     ax4.set_title('T2 Image') # set title of a figure
 
-    ax5.imshow(image_mask[:,:,75],cmap='gray') # visualize mask image
+    ax5.imshow(image_mask[:,:,95]) # visualize mask image
     ax5.set_title('Mask Image') # set title of a figure
 
     plt.show() # display the plots
@@ -361,37 +361,44 @@ def croppedImagePlot(image:np.ndarray,mask:np.ndarray, trainset_path:str, image_
     """
 
     flair_image = nib.load(os.path.join(trainset_path,image_names[0])).get_fdata() # load flair image
+    t1_image = nib.load(os.path.join(trainset_path,image_names[1])).get_fdata() # load t1 image
     t1ce_image = nib.load(os.path.join(trainset_path,image_names[2])).get_fdata() # load t1ce image
     t2_image = nib.load(os.path.join(trainset_path,image_names[3])).get_fdata() # load t2 image
     mask_image = nib.load(os.path.join(trainset_path,image_names[-1])).get_fdata() # load mask image
 
-    fig, ((ax1,ax2,ax3,ax4),(ax5,ax6,ax7,ax8)) = plt.subplots(nrows=2, ncols=4, figsize=(20,20)) # create a figure canvas with 2 rows and 4 cols with 20*20 figure size each
+    fig, ((ax1,ax2,ax3,ax4,ax5),(ax6,ax7,ax8,ax9,ax10)) = plt.subplots(nrows=2, ncols=5, figsize=(20,20)) # create a figure canvas with 2 rows and 4 cols with 20*20 figure size each
 
     ax1.imshow(flair_image[:,:,95]) # visualize normal flair image
     ax1.set_title("Normal flair image") # set figure title
 
-    ax2.imshow(t1ce_image[:,:,95]) # visualize normal t1ce image
-    ax2.set_title("Normal t1ce image") # set figure title
+    ax2.imshow(t1_image[:,:,95]) # visualize normal t1 image
+    ax2.set_title("Normal t1 image") # set figure title
 
-    ax3.imshow(t2_image[:,:,95]) # visualize normal t2 image
-    ax3.set_title("Normal t2 image") # set figure title
+    ax3.imshow(t1ce_image[:,:,95]) # visualize normal t1ce image
+    ax3.set_title("Normal t1ce image") # set figure title
 
-    ax4.imshow(mask_image[:,:,95]) # visualize normal mask image
-    ax4.set_title("Normal mask image") # set figure title
+    ax4.imshow(t2_image[:,:,95]) # visualize normal t2 image
+    ax4.set_title("Normal t2 image") # set figure title
+
+    ax5.imshow(mask_image[:,:,95]) # visualize normal mask image
+    ax5.set_title("Normal mask image") # set figure title
 
     plt.subplots_adjust(hspace=0.5) # add white space between two rows
 
-    ax5.imshow(image[:,:,82,0]) # visualize cropped flair image
-    ax5.set_title("Cropped flair image") # set figure title
+    ax6.imshow(image[:,:,82,0]) # visualize cropped flair image
+    ax6.set_title("Cropped flair image") # set figure title
 
-    ax6.imshow(image[:,:,82,1]) # visualize cropped t1ce image
-    ax6.set_title("Cropped t1ce image") # set figure title
+    ax7.imshow(image[:,:,82,1]) # visualize cropped t1 image
+    ax7.set_title("Cropped t1 image") # set figure title
 
-    ax7.imshow(image[:,:,82,2]) # visualize cropped t2 image
-    ax7.set_title("Cropped t2 image") # set figure title
+    ax8.imshow(image[:,:,82,2]) # visualize cropped t1ce image
+    ax8.set_title("Cropped t1ce image") # set figure title
 
-    ax8.imshow(mask[:,:,82]) # visualize cropped mask image
-    ax8.set_title("Cropped mask image") # set figure title
+    ax9.imshow(image[:,:,82,3]) # visualize cropped t2 image
+    ax9.set_title("Cropped t2 image") # set figure title
+
+    ax10.imshow(mask[:,:,82]) # visualize cropped mask image
+    ax10.set_title("Cropped mask image") # set figure title
 
     plt.show() # display the plots
 
