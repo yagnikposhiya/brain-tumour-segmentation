@@ -184,9 +184,9 @@ def Z_Score_Normalization_forSingleSlice(trainset_path:str,image_name:str) -> No
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20,10)) # create figure contains 1 row 2 columns with 20*10 figure size
 
-    ax1.imshow(selected_image_data,cmap='gray') # visualize an input image before applying z-score normalization
+    ax1.imshow(selected_image_data) # visualize an input image before applying z-score normalization
     ax1.set_title(f'Before applying z-score normalization \n {image_name}') # set figure title
-    ax2.imshow(normalized_data, cmap='gray') # visualize an input image after applying z-score normalization
+    ax2.imshow(normalized_data) # visualize an input image after applying z-score normalization
     ax2.set_title(f'After applying z-score normalization \n {image_name}') # set figure title
     plt.show() # display the plots
 
@@ -240,27 +240,29 @@ def flipImageHorizontally(trainset_path:str,image_name:str,mask_name:str) -> Non
     bg_img = nib.load(os.path.join(trainset_path,image_name)).get_fdata() # load an image of type flair, t1, t1ce, t2 only
     mask_img = nib.load(os.path.join(trainset_path,mask_name)).get_fdata() # load an image of type mask/seg only
 
+
+
     flipped_horizontal_bg_img = np.flip(bg_img, axis=0) # flip alongside the first axis (vertical axis)
     flipped_horizontal_mask_img = np.flip(mask_img, axis=0) # flip alongside the first axis (vertical axis)
 
     fig, ((ax1, ax2),(ax3, ax4)) = plt.subplots(nrows=2, ncols=2, figsize=(20,20)) # create a figure contains 2 rows and 2 cols with 20*20 each figure size
     
     # PLOT ORIGINAL BACKGROUND IMAGE
-    ax1.imshow(bg_img[:,:,95]) # visualize flair, t1, t1ce, t2 images only
+    ax1.imshow(bg_img[56:184,56:184,95]) # visualize flair, t1, t1ce, t2 images only
     ax1.set_title(f'Image before applying horizontal flip \n {image_name}') # set title for figure
 
     # PLOT FLIPPED BACKGROUND IMAGE
-    ax2.imshow(flipped_horizontal_bg_img[:,:,95]) # visualize flair, t1, t1ce, t2 images only after applying flipping
+    ax2.imshow(flipped_horizontal_bg_img[56:184,56:184,95]) # visualize flair, t1, t1ce, t2 images only after applying flipping
     ax2.set_title(f'Image after applying horizontal flip \n {image_name}') # set title for figure
 
     plt.subplots_adjust(hspace=0.5) # add white spce between two rows
 
     # PLOT ORIGINAL MASK IMAGE
-    ax3.imshow(mask_img[:,:,95]) # visualize mask/seg image only
+    ax3.imshow(mask_img[56:184,56:184,95]) # visualize mask/seg image only
     ax3.set_title(f'Mask/Seg Image before applying horizontal flip \n {image_name}') # set title for figure
 
     # PLOT FLIPPED MASK IMAGE
-    ax4.imshow(flipped_horizontal_mask_img[:,:,95]) # visualize mask/seg image only
+    ax4.imshow(flipped_horizontal_mask_img[56:184,56:184,95]) # visualize mask/seg image only
     ax4.set_title(f'Mask/Seg Image after applying horizontal flip \n {image_name}') # set title for figure
 
     plt.show() # display the plots
@@ -287,21 +289,21 @@ def flipImageVertically(trainset_path:str,image_name:str,mask_name:str) -> None:
     fig, ((ax1, ax2),(ax3, ax4)) = plt.subplots(nrows=2, ncols=2, figsize=(20,20)) # create a figure contains 2 rows and 2 cols with 20*20 each figure size
     
     # PLOT ORIGINAL BACKGROUND IMAGE
-    ax1.imshow(bg_img[:,:,95]) # visualize flair, t1, t1ce, t2 images only
+    ax1.imshow(bg_img[56:184,56:184,95]) # visualize flair, t1, t1ce, t2 images only
     ax1.set_title(f'Image before applying vertical flip \n {image_name}') # set title for figure
 
     # PLOT FLIPPED BACKGROUND IMAGE
-    ax2.imshow(flipped_vertical_bg_img[:,:,95]) # visualize flair, t1, t1ce, t2 images only after applying flipping
+    ax2.imshow(flipped_vertical_bg_img[56:184,56:184,95]) # visualize flair, t1, t1ce, t2 images only after applying flipping
     ax2.set_title(f'Image after applying vertical flip \n {image_name}') # set title for figure
 
     plt.subplots_adjust(hspace=0.5) # add white spce between two rows
 
     # PLOT ORIGINAL MASK IMAGE
-    ax3.imshow(mask_img[:,:,95]) # visualize mask/seg image only
+    ax3.imshow(mask_img[56:184,56:184,95]) # visualize mask/seg image only
     ax3.set_title(f'Mask/Seg Image before applying vertical flip \n {image_name}') # set title for figure
 
     # PLOT FLIPPED MASK IMAGE
-    ax4.imshow(flipped_vertical_mask_img[:,:,95]) # visualize mask/seg image only after appklying flipping
+    ax4.imshow(flipped_vertical_mask_img[56:184,56:184,95]) # visualize mask/seg image only after appklying flipping
     ax4.set_title(f'Mask/Seg Image after applying vertical flip \n {image_name}') # set title for figure
 
     plt.show() # display the plots
