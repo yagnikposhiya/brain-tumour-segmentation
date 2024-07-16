@@ -43,6 +43,9 @@ class Config():
         self.ANONYMOUS = 'allow' # set anonymous value type
         self.LOG_MODEL = 'all' # set log model type
 
+        # visualization parameters
+        self.VISUALIZE_IGNORED_XY_PAIR = False # set boolean value for getting visualization of what ignored mask and image contains
+
     def printConfiguration(self):
         """
         This function is used to print all configuration related to paths and model training params.
@@ -58,5 +61,5 @@ class Config():
         print(f"Current Working Directory: {self.CWD}, Trainset_path: {self.TRAINSET_PATH}, Validset_path: {self.VALIDSET_PATH}, ",
               f"Train_image_path: {self.TRAIN_IMAGE_PATH}, Path_to_save_processed_data: {self.PATH_TO_SAVE_PROCESSED_DATA}, ",
               f"Path_to_save_trained_model: {self.PATH_TO_SAVE_TRAINED_MODEL}, Batch_size: {self.BATCH_SIZE}, Max_epochs: {self.MAX_EPOCHS}, ",
-              f"Num_classes: {self.NUM_CLASSES}, Learning_rate: {self.LEARNING_RATE}, Trasform/Data_augmentation: {self.TRANSFORM}")
+              f"Num_classes: {self.NUM_CLASSES}, Learning_rate: {self.LEARNING_RATE}, Trasform/Data_augmentation: {self.TRANSFORM}, Visualize_ignored_XY_pairs: {self.VISUALIZE_IGNORED_XY_PAIR}")
         
