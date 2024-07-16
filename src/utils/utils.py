@@ -184,6 +184,9 @@ def Z_Score_Normalization_forSingleSlice(trainset_path:str,image_name:str) -> No
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20,10)) # create figure contains 1 row 2 columns with 20*10 figure size
 
+    print("- Range of pixel values before applying z-score normalization: {} - {}".format(np.min(selected_image_data), np.max(selected_image_data))) # print pixel value range before applying z-score normalization
+    print("- Range of pixel values after applying z-score normalization: {} - {}".format(np.min(normalized_data), np.max(normalized_data))) # print pixel value range after applying z-score normalization
+
     ax1.imshow(selected_image_data) # visualize an input image before applying z-score normalization
     ax1.set_title(f'Before applying z-score normalization \n {image_name}') # set figure title
     ax2.imshow(normalized_data) # visualize an input image after applying z-score normalization
