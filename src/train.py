@@ -190,7 +190,8 @@ if __name__=='__main__':
         patience=10, # number of epochs with no improvements after which training will be stopped
         mode='min' # 'min' because want to stop when loss stops decreasing
     )
-    trainer = pl.Trainer(max_epochs=config.MAX_EPOCHS, log_every_n_steps=1, logger=wandb_logger, callbacks=early_stopping_callback) # set the maxium number of epochs; saving a training logs at every step; also applied early stopping
+    # trainer = pl.Trainer(max_epochs=config.MAX_EPOCHS, log_every_n_steps=1, logger=wandb_logger, callbacks=early_stopping_callback) # set the maxium number of epochs; saving a training logs at every step; also applied early stopping
+    trainer = pl.Trainer(max_epochs=config.MAX_EPOCHS, log_every_n_steps=1, logger=wandb_logger) # set the maxium number of epochs; saving a training logs at every step; without early stopping
 
     print("-------------------------------------------------")
     print("------- NN ARCHITECTURE (MODEL) TRAINING --------")
