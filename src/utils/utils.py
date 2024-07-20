@@ -665,7 +665,7 @@ def groundTruthVSPredicted_AllClasses(image: np.ndarray, groundtruth_mask: np.nd
     """
 
     # define a custom colormap for the mask
-    class_colors = ['black','red','green','yellow'] # colors for classes 0, 1, 2, and 3
+    class_colors = ['black','blue','yellow','red'] # colors for classes <do not know>
     cmap = ListedColormap(class_colors)
 
     print(f"- Groundtruth mask shape: {groundtruth_mask.shape}")
