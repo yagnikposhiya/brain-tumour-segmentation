@@ -517,9 +517,9 @@ class CascadedMobileNetV3LargeUNet(pl.LightningModule):
         """
         Classes and their labels:
         label-0: Background
-        label-1: Necrotic and Non-enhancing Tumor Core (NCR/NET)
-        label-2: Peritumoral Edema
-        label-3: GD-enhancing Tumor
+        label-1: Necrotic and Non-enhancing Tumor Core (NCR/NET) -> Tumor core
+        label-2: Peritumoral Edema -> Whole Tumor
+        label-3: GD-enhancing Tumor -> Enhancing Tumor
         """
         preds = F.one_hot(preds, num_classes=self.num_classes).permute(0, 3, 1, 2).float()
         targets = F.one_hot(targets, num_classes=self.num_classes).permute(0, 3, 1, 2).float()
