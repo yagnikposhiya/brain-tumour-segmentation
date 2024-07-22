@@ -8,17 +8,43 @@ matplotlib.use('TkAgg')  # or 'Qt5Agg' or any other backend that supports intera
 # by default backend: FigureCanvasAgg
 
 import os
+import time
 import torch
 import numpy as np
 import nilearn as nl
 import nibabel as nib
 import matplotlib.pyplot as plt
 import nilearn.plotting as nlplt
+import matplotlib.patches as mpatches
 
 from scipy.stats import norm
+from nn_arch.unet import UNet
 from skimage.util import montage
+from config.config import Config
+from nn_arch.boxunet import BoxUNet
 from skimage.transform import rotate
 from matplotlib.colors import ListedColormap
+from nn_arch.mobilenetv1 import MobileNetV1UNet
+from nn_arch.mobilenetv2 import MobileNetV2UNet
+from nn_arch.mobilenetv3_small import MobileNetV3SmallUNet
+from nn_arch.mobilenetv3_large import MobileNetV3LargeUNet
+from nn_arch.cascaded_mobilenetv3_large import CascadedMobileNetV3LargeUNet
+from nn_arch.mobilenetv3_large_without_SEblock import MobileNetV3LargeUNet_Without_SEBlock
+from nn_arch.mobilenetv3_small_without_SEblock import MobileNetV3SmallUNet_Without_SEBlock
+
+config = Config() # create an instance of Config class
+
+class NotANumber(BaseException): # create a custom class for not a number error
+    pass
+
+class DirectoryDoesNotExist(BaseException): # create a custom class for error: directory does not exist
+    pass
+
+class FileDoesNotExist(BaseException): # create a custom class for error: file does not exist
+    pass
+
+class NotADirectory(BaseException): # create a custom class for error:  not a directory
+    pass
 
 def showAllTypesOfImages(trainset_path:str, image_name:list) -> None:
     """
@@ -551,7 +577,6 @@ def load_saved_model(model_class,num_classes,learning_rate, optimizer) -> torch.
 
             if not os.path.exists(model_path): # check whether model file is exist or not
                 print(f"The file {model_path} does not exist.")
-                return None
             
             elif os.path.exists(model_path) and os.path.isfile(model_path):
                 model = model_class(num_classes=num_classes,learning_rate=learning_rate,optimizer=optimizer) # initiailze model class
@@ -573,81 +598,73 @@ def prepareImageForInference() -> torch.Tensor:
     - (None)
 
     Returns:
-    - (torch.Tensor): return input image in tensor type with numpy type also
+    - (torch.Tensor): return input image and mask in tensor type with numpy type also
     """
+    
+    image_directory_path = str(input("Enter path where image file exists (without filename): "))# ask user to enter path for directory
 
-    while True:
-        try:
-            image_directory_path = str(input("Enter path where image file exists (without filename): "))# ask user to enter path for directory
+    if os.path.exists(image_directory_path) and os.path.isdir(image_directory_path):
+        flair_image_path = os.path.join(image_directory_path,f"{os.path.basename(image_directory_path)}_flair.nii") # set path for flair image
+        t1_image_path = os.path.join(image_directory_path,f"{os.path.basename(image_directory_path)}_t1.nii") # set path for t1 image
+        t1ce_image_path = os.path.join(image_directory_path,f"{os.path.basename(image_directory_path)}_t1ce.nii") # set path for t1ce image
+        t2_image_path = os.path.join(image_directory_path,f"{os.path.basename(image_directory_path)}_t2.nii") # set path for t2 image
 
-            if (os.path.exists(image_directory_path)):
-                flair_image_path = os.path.join(image_directory_path,f"{os.path.basename(image_directory_path)}_flair.nii") # set path for flair image
-                t1_image_path = os.path.join(image_directory_path,f"{os.path.basename(image_directory_path)}_t1.nii") # set path for t1 image
-                t1ce_image_path = os.path.join(image_directory_path,f"{os.path.basename(image_directory_path)}_t1ce.nii") # set path for t1ce image
-                t2_image_path = os.path.join(image_directory_path,f"{os.path.basename(image_directory_path)}_t2.nii") # set path for t2 image
+        mask_image_path = os.path.join(image_directory_path,f"{os.path.basename(image_directory_path)}_seg.nii") # set path for mask image
 
-                mask_image_path = os.path.join(image_directory_path,f"{os.path.basename(image_directory_path)}_seg.nii") # set path for mask image
+        if (os.path.exists(flair_image_path)) and (os.path.exists(t1_image_path)) and (os.path.exists(t2_image_path)) and (os.path.exists(t1ce_image_path)) and (os.path.exists(mask_image_path)): # check whether all images exist or not
 
-                if (os.path.exists(flair_image_path)) and (os.path.exists(t1_image_path)) and (os.path.exists(t2_image_path)) and (os.path.exists(t1ce_image_path)) and (os.path.exists(mask_image_path)): # check whether all images exist or not
+            print("Preparing image/mask for inference...")
 
-                    print("Preparing image/mask for inference...")
+            flair_image = nib.load(flair_image_path).get_fdata() # load flair image
+            t1_image = nib.load(t1_image_path).get_fdata() # load t1 image
+            t1ce_image = nib.load(t1ce_image_path).get_fdata() # load t1ce image
+            t2_image = nib.load(t2_image_path).get_fdata() # load t2 image
 
-                    flair_image = nib.load(flair_image_path).get_fdata() # load flair image
-                    t1_image = nib.load(t1_image_path).get_fdata() # load t1 image
-                    t1ce_image = nib.load(t1ce_image_path).get_fdata() # load t1ce image
-                    t2_image = nib.load(t2_image_path).get_fdata() # load t2 image
+            mask_image = nib.load(mask_image_path).get_fdata() # load mask image
 
-                    mask_image = nib.load(mask_image_path).get_fdata() # load mask image
+            flair_image = flair_image[56:184, 56:184, 13:141] # crop flair image and shape is (128,128,128)
+            t1_image = t1_image[56:184, 56:184, 13:141] # crop t1 image and shape is (128,128,128)
+            t1ce_image = t1ce_image[56:184, 56:184, 13:141] # crop t1ce and shape is (128,128,128)
+            t2_image = t2_image[56:184, 56:184, 13:141] # crop t2 image and shape is (128,128,128)
+            mask_image = mask_image[56:184, 56:184, 13:141] # crop mask image and shape is (128,128,128)
 
-                    flair_image = flair_image[56:184, 56:184, 13:141] # crop flair image and shape is (128,128,128)
-                    t1_image = t1_image[56:184, 56:184, 13:141] # crop t1 image and shape is (128,128,128)
-                    t1ce_image = t1ce_image[56:184, 56:184, 13:141] # crop t1ce and shape is (128,128,128)
-                    t2_image = t2_image[56:184, 56:184, 13:141] # crop t2 image and shape is (128,128,128)
-                    mask_image = mask_image[56:184, 56:184, 13:141] # crop mask image and shape is (128,128,128)
+            slice_no = get_user_choice(0, flair_image.shape[0]) # give freedom to user to select a slice index
 
-                    slice_no = get_user_choice(0, flair_image.shape[0]) # give freedom to user to select a slice index
+            flair_image = flair_image[:,:,slice_no] # select only single slice from an image
+            t1_image = t1_image[:,:,slice_no] # select only single slice from an image
+            t1ce_image = t1ce_image[:,:,slice_no] # select only single slice from an image
+            t2_image = t2_image[:,:,slice_no] # select only single slice from an image
+            mask_image = mask_image[:,:,slice_no] # select only single slice from an image
+            mask_image = mask_image.astype(np.uint8) # change the data type
 
-                    flair_image = flair_image[:,:,slice_no] # select only single slice from an image
-                    t1_image = t1_image[:,:,slice_no] # select only single slice from an image
-                    t1ce_image = t1ce_image[:,:,slice_no] # select only single slice from an image
-                    t2_image = t2_image[:,:,slice_no] # select only single slice from an image
-                    mask_image = mask_image[:,:,slice_no] # select only single slice from an image
-                    mask_image = mask_image.astype(np.uint8) # change the data type
+            print(f"- Grountruth mask unique before label changing: {np.unique(mask_image)}")
+            mask_image [mask_image == 4] = 3 # reassign mask value 4 to 3
+            print(f"- Grountruth mask unique after label changing: {np.unique(mask_image)}")
 
-                    print(f"- Grountruth mask unique before label changing: {np.unique(mask_image)}")
-                    mask_image [mask_image == 4] = 3 # reassign mask value 4 to 3
-                    print(f"- Grountruth mask unique after label changing: {np.unique(mask_image)}")
+            np_mask_image = mask_image # copy mask image which is in numpy format
 
-                    np_mask_image = mask_image # copy mask image which is in numpy format
+            stacked_image = np.stack([flair_image,t1_image,t1ce_image,t2_image], axis=0) # create a stack image of shape (4,128,128)
+            image = torch.tensor(stacked_image,dtype=torch.float32).unsqueeze(0) # convert numpy array into torch tensor and add batch dimension to an image
+            mask = torch.tensor(mask_image,dtype=torch.long) # convert to a torch tensor
 
-                    stacked_image = np.stack([flair_image,t1_image,t1ce_image,t2_image], axis=0) # create a stack image of shape (4,128,128)
-                    image = torch.tensor(stacked_image,dtype=torch.float32).unsqueeze(0) # convert numpy array into torch tensor and add batch dimension to an image
-                    mask = torch.tensor(mask_image,dtype=torch.long) # convert to a torch tensor
+            return image, mask, flair_image, np_mask_image
 
-                    return image, mask, flair_image, np_mask_image
-
-                else:
-                    if (not os.path.exists(flair_image_path)): # check whether flair image exists or not
-                        print(f"The file {flair_image_path} does not exist.")
-                        return None
-                    elif (not os.path.exists(t1_image_path)): # check whether t1 image exists or not
-                        print(f"The file {t1_image_path} does not exist.")
-                        return None
-                    elif (not os.path.exists(t1ce_image_path)): # check whether t1ce image exists or not
-                        print(f"The file {t1ce_image_path} does not exist.")
-                        return None
-                    elif (not os.path.exists(t2_image_path)): # check whether t2 image exists or not
-                        print(f"The file {t2_image_path} does not exist.")
-                        return None
-                    else: # mask image does not exist
-                        print(f"The file {mask_image_path} does not exist.")
-                        return None
-            else:
-                print(f"The directory {image_directory_path} does not exist.")
-                return None
-
-        except ValueError:
-            print(f"The directory {image_directory_path} does not exist.")
+        else:
+            if (not os.path.exists(flair_image_path)): # check whether flair image exists or not
+                raise FileDoesNotExist(f'{flair_image_path}')
+            elif (not os.path.exists(t1_image_path)): # check whether t1 image exists or not
+                raise FileDoesNotExist(f'{t1_image_path}')
+            elif (not os.path.exists(t1ce_image_path)): # check whether t1ce image exists or not
+                raise FileDoesNotExist(f'{t1ce_image_path}')
+            elif (not os.path.exists(t2_image_path)): # check whether t2 image exists or not
+                raise FileDoesNotExist(f'{t2_image_path}')
+            else: # mask image does not exist
+                raise FileDoesNotExist(f'{mask_image_path}')
+    else:
+        if not os.path.exists(image_directory_path):
+            raise DirectoryDoesNotExist(f'{image_directory_path}')
+        elif not os.path.isdir(image_directory_path):
+            raise NotADirectory(f'{image_directory_path}')
 
 
 def groundTruthVSPredicted_AllClasses(image: np.ndarray, groundtruth_mask: np.ndarray, predicted_mask:np.ndarray, model:str) -> None:
@@ -705,3 +722,109 @@ def available_optimizers() -> None:
         print(f"{i}_________{optimizers[i]}") # print list of available optimizers with integer optimizer number
 
     return optimizers, get_user_choice(0,len(optimizers)-1) # get user choice
+
+def createMontage() -> None:
+    """
+    This function is used to create montage (with 6 rows and 5 columns) of groundtruth and predicted
+    segmentation images.
+
+    Parameters:
+    - (None)
+
+    Returns:
+    - (None)
+    """
+
+    loaded_models = [] # define empty list contains loaded models
+    predicted_mask = [] # define empty list contains predicted mask
+    optim_bullets = ['A','B','C','D'] # define list contains bullets for available 4 optimizers
+    user_choices = [] # define empty list to save user choices
+    loaded_tensor_images = [] # define empty list contains input images in tensor type
+    loaded_numpy_images = [] # define empty list contains input images in numpy type
+    loaded_numpy_masks = [] # define empty list contains groundtruth masks in numpy type
+
+    user_models = 0 # number of neural net architectures user wants to test
+    user_images = 0 # number of images on which user wants to test neural net architectures
+
+    model_classes = {
+        0: UNet,
+        1: MobileNetV1UNet,
+        2: MobileNetV2UNet,
+        3: MobileNetV3SmallUNet,
+        4: MobileNetV3LargeUNet,
+        5: CascadedMobileNetV3LargeUNet,
+        6: BoxUNet,
+        7: MobileNetV3LargeUNet_Without_SEBlock,
+        8: MobileNetV3SmallUNet_Without_SEBlock
+    }
+
+    # define a custom colormap for the mask
+    class_colors = ['black','blue','yellow','red'] # colors for classes <do not know>
+    cmap = ListedColormap(class_colors)
+
+    while True:
+        try:
+            user_models = int(input("How many neural net architectures do you want to test? (Must be a positive integer number): ")) # ask user to enter number of models he/she wants to test
+            user_images = int(input(f"On how many images do you want to test {user_models} neural net architectures? (Must be a positive integer number): ")) # ask user to enter number of images on which he/she wants to test models
+
+            if (user_models > 0) and (user_images > 0):
+                break # stop the loop execution
+            else:
+                print("Number must be positive integer number.")
+
+        except BaseException:
+            raise NotANumber("Answer should be integer number.")
+        
+    for _ in range(0,user_images):
+        tensor_image, _, numpy_image, numpy_mask = prepareImageForInference() # prepare images and masks for inference
+        loaded_tensor_images.append(tensor_image) # append tensor image to the list
+        loaded_numpy_images.append(numpy_image) # append numpy image to the list
+        loaded_numpy_masks.append(numpy_mask) # append numpy mask to the list
+
+    for _ in range(0,user_models):
+        available_models_namelist, user_choice = available_models() # get user choice for available models
+        user_choices.append(user_choice) # append user choices
+        availbale_optim, user_choice_optim = available_optimizers() # get user choice for available optimizers
+        model_class = model_classes[user_choice] # assign selected model class from dictionary
+        loaded_model = load_saved_model(model_class=model_class, num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE, optimizer=availbale_optim[user_choice_optim]) # load model
+        loaded_models.append(loaded_model) # append loaded model to the list
+
+    for i in range(0,user_images):
+        for j in range(0,user_models):
+            with torch.no_grad():
+                output = loaded_models[j](loaded_tensor_images[i]) # performing segmentation
+                prediction = torch.argmax(output, dim=1) # convert raw outputs to predicted class labels
+                prediction = prediction.permute(1,2,0) # transform shape from (1,128,128) to (128,128,1)
+                predicted_mask.append(prediction.cpu().numpy()) # append prediction to the list i.e. predicted_mask
+
+    # plotting the montage
+    fig, axes = plt.subplots(user_images, user_models + 1, figsize=(15,10))  # Create subplots
+    axes = axes.flatten()
+
+    for i in range(user_images):
+        # plot groundtruth mask
+        axes[i * (user_models + 1)].imshow(loaded_numpy_images[i], cmap='gray', interpolation=None) # background image
+        axes[i * (user_models + 1)].imshow(loaded_numpy_masks[i], cmap=cmap, interpolation=None, alpha=0.3) # groundtruth mask image
+        if i == 0:
+            axes[i * (user_models + 1)].set_title('Groundtruth')
+        axes[i * (user_models + 1)].axis('off')
+
+        # plot predictions for each model
+        for j in range(user_models):
+            axes[i * (user_models + 1) + j + 1].imshow(loaded_numpy_images[i], cmap='gray', interpolation=None) # background image
+            axes[i * (user_models + 1) + j + 1].imshow(predicted_mask[i * user_models + j], cmap=cmap, interpolation=None, alpha=0.3) # predicted mask image
+            if i == 0:
+                # axes[i * (user_models + 1) + j + 1].set_title(f'{available_models_namelist[user_choices[j]]}')
+                axes[i * (user_models + 1) + j + 1].set_title(f'{optim_bullets[j]}. {availbale_optim[user_choice_optim]}')
+            axes[i * (user_models + 1) + j + 1].axis('off')
+    
+    # legend_handles = [
+    #     mpatches.Patch(color='red', label='Enhancing Tumor'),
+    #     mpatches.Patch(color='yellow', label='Whole Tumor'),
+    #     mpatches.Patch(color='blue', label='Tumor core')
+    # ] # create custom legend handles
+
+    # fig.legend(handles=legend_handles, loc='upper center', bbox_to_anchor=(0.5, 1.05), ncol=3) # add legend to the figure
+    
+    plt.tight_layout()
+    plt.show()
