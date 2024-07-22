@@ -16,7 +16,7 @@ from nn_arch.mobilenetv3_large import MobileNetV3LargeUNet
 from nn_arch.cascaded_mobilenetv3_large import CascadedMobileNetV3LargeUNet
 from nn_arch.mobilenetv3_large_without_SEblock import MobileNetV3LargeUNet_Without_SEBlock
 from nn_arch.mobilenetv3_small_without_SEblock import MobileNetV3SmallUNet_Without_SEBlock
-from utils.utils import load_saved_model, available_models, prepareImageForInference, groundTruthVSPredicted_AllClasses, available_optimizers
+from utils.utils import load_saved_model, available_models, prepareImageForInference, groundTruthVSPredicted_AllClasses, available_optimizers, createMontage
 
 
 if __name__=='__main__':
@@ -57,7 +57,7 @@ if __name__=='__main__':
     print("------------------ INFERENCE --------------------")
     print("-------------------------------------------------")
 
-    image, mask, np_image, np_mask = prepareImageForInference() # prepare image and mask for inference
+    image, _, np_image, np_mask = prepareImageForInference() # prepare image and mask for inference
     print("Image and mask are prepared successfully.")
 
     # perform inference
@@ -100,3 +100,15 @@ if __name__=='__main__':
     print(f"- Output segmented mask: {predicted_mask}")
 
     groundTruthVSPredicted_AllClasses(image=np_image, groundtruth_mask=np_mask, predicted_mask=predicted_mask, model=avail_models[user_choice]) # plot the predicted and groundtruth mask
+
+    while True:
+        try:
+            user_ans = str(input("Do you want to create a montage with multiple architectures and images [Y/N]?: ")) # ask user that if he/she wants to create montage
+            if user_ans.lower() == 'y': # if user enters Y/y
+                createMontage() # call function to create montage from multiple archs and images
+                break # stop loop execution after successful function execution
+            else: # otherwise stop loop execution
+                break
+            
+        except ValueError:
+            print()
