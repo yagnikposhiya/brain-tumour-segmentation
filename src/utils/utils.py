@@ -783,8 +783,8 @@ def createMontage() -> None:
 
     for _ in range(0,user_models):
         available_models_namelist, user_choice = available_models() # get user choice for available models
-        user_choices.append(user_choice) # append user choices
         availbale_optim, user_choice_optim = available_optimizers() # get user choice for available optimizers
+        user_choices.append(user_choice_optim) # append user choices
         model_class = model_classes[user_choice] # assign selected model class from dictionary
         loaded_model = load_saved_model(model_class=model_class, num_classes=config.NUM_CLASSES, learning_rate=config.LEARNING_RATE, optimizer=availbale_optim[user_choice_optim]) # load model
         loaded_models.append(loaded_model) # append loaded model to the list
@@ -815,7 +815,7 @@ def createMontage() -> None:
             axes[i * (user_models + 1) + j + 1].imshow(predicted_mask[i * user_models + j], cmap=cmap, interpolation=None, alpha=0.3) # predicted mask image
             if i == 0:
                 # axes[i * (user_models + 1) + j + 1].set_title(f'{available_models_namelist[user_choices[j]]}')
-                axes[i * (user_models + 1) + j + 1].set_title(f'{optim_bullets[j]}. {availbale_optim[user_choice_optim]}')
+                axes[i * (user_models + 1) + j + 1].set_title(f'{optim_bullets[j]}. {availbale_optim[user_choices[j]]}')
             axes[i * (user_models + 1) + j + 1].axis('off')
     
     # legend_handles = [
