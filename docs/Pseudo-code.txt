@@ -61,7 +61,7 @@ step-5: Reassign mask image pixel values from 4 to 3.
 step-6: Crop each slice of the flair, T1, T1ce, T2, and mask images from 240*240 to 128*128.
 step-7: Drop the first A1 and last A2 slices from the flair, T1, T1ce, T2, and mask images, keeping 128 slices 
 	for each image.
-step-8: Convert all flair, T1, T1ce, T2, and mask images to 128*128*128 from 240*240*150.
+step-8: Convert all flair, T1, T1ce, T2, and mask images to 128*128*128 from 240*240*155.
 step-9: If the ground truth segmented mask contains more than 1% of the total pixels in the mask image, then:
 step-10:	For each slice number in 128 slices:
 step-11:		Create a stack image from all flair, T1, T1ce, and T2 images with the corresponding 
@@ -104,3 +104,54 @@ step-42:		Log all the performance parameters, i.e., loss, dice-score, jaccard-sc
 step-43:		Backpropagate the loss value, and update weights using the optimizer based on the 
 			calculated gradients.
 step-44: Save the trained neural net architecture with the .pth file extension.
+
+------------------------------------------------------------------------------------------------------------------------
+OPTIMIZED PSEUDO CODE:
+
+Input: 240*240*150 images of the four modalities
+Output: 128*128*4 image
+
+step-1: Read each slice of the flair, T1, T1ce, and T2 images.
+step-2: Calculate the Z-score for each slice in an image.
+step-3: Read each slice of the mask image.
+step-4: Convert mask image pixel values to 8-bit unsigned integers.
+step-5: Reassign mask image pixel values from 4 to 3.
+step-6: Crop each slice of the flair, T1, T1ce, T2, and mask images from 240*240 to 128*128.
+step-7: Drop the first A1 and last A2 slices from the flair, T1, T1ce, T2, and mask images, keeping 128 slices 
+	for each image.
+step-8: Convert all flair, T1, T1ce, T2, and mask images to 128*128*128 from 240*240*155.
+step-9: If the ground truth segmented mask contains more than 1% of the total pixels in the mask image, then:
+step-10:	For each slice number in 128 slices:
+step-11:		Create a stack image from all flair, T1, T1ce, and T2 images with the corresponding 
+			slice number.
+step-12:		Create an input(X)-output(Y) pair; X = stack image and Y = mask image with the corresponding 
+			slice number.
+step-13:		Ensure input(X).shape = (128,128,4) and output(Y).shape = (128,128).
+step-14: 		Save the input(X)-output(Y) pair as a numpy array with the .npy file extension.
+step-15: Else, ignore the image.
+step-16: Load input(X)-output(Y) pairs and convert inputs(X) (stack images) and outputs(Y) (mask images) to grayscale.
+step-17: Apply data augmentation, i.e., horizontal or vertical flipping to the inputs(X) and outputs(Y).
+step-18: Convert inputs(X) (stack images) to torch Tensors.
+step-19: Convert outputs(Y) (mask images) to torch Tensors.
+step-20: Split loaded input(X)-output(Y) pairs into train_set (70%), validation_set (20%), and test_set (10%).
+step-21: Load train_set and validation_set.
+step-22: If a GPU is available, move the neural net architecture to the GPU.
+step-23: For MAX_EPOCHS:
+step-24: 	For TRAINSET_SAMPLES/BATCH_SIZE:
+step-25: 		Perform a forward pass with the inputs(X)-outputs(Y) in the neural net architecture.
+step-26:		Calculate the hypothesis(Y-cap) by converting raw output to predicted class labels.
+step-27:		Calculate the cross-entropy loss from outputs(Y) and hypothesis(Y-cap).
+step-28:		Calculate the mean dice-score over the batch and also for all 3 classes.
+step-29:		Calculate the mean jaccard-score over the batch and also for all 3 classes.
+step-30: 		Calculate the mean sensitivity over the batch and also for all 3 classes.
+step-31:		Calculate the mean specificity over the batch and also for all 3 classes.
+step-32:		Log all the performance parameters, i.e., loss, dice-score, jaccard-score, 
+			sensitivity, specificity.
+step-33:		Backpropagate the loss value, and update weights using the optimizer based on the 
+			calculated gradients.
+step-34:	For VALIDATIONSET_SAMPLES/BATCH_SIZE:
+step-35: 		Repeat step-25:step-33
+step-36: Save the trained neural net architecture with the .pth file extension.
+
+
+
