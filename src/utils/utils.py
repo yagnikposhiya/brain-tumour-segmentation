@@ -76,18 +76,23 @@ def showAllTypesOfImages(trainset_path:str, image_name:list) -> None:
 
     ax1.imshow(image_flair[:,:,95]) # visualize flair image
     ax1.set_title('Flair Image') # set title of a figure
+    ax1.axis('off') # set axis off
 
     ax2.imshow(image_t1[:,:,95]) # visualize t1 image
     ax2.set_title('T1 Image') # set title of a figure
+    ax2.axis('off') # set axis off
 
     ax3.imshow(image_t1ce[:,:,95]) # visualize t1ce image
     ax3.set_title('T1CE Image') # set title of a figure
+    ax3.axis('off') # set axis off
 
     ax4.imshow(image_t2[:,:,95]) # visualize t2 image
     ax4.set_title('T2 Image') # set title of a figure
+    ax4.axis('off') # set axis off
 
     ax5.imshow(image_mask[:,:,95]) # visualize mask image
     ax5.set_title('Mask Image') # set title of a figure
+    ax5.axis('off') # set axis off
 
     plt.show() # display the plots
 
@@ -111,18 +116,23 @@ def showAllTypesOfImages_fromArray(image_flair:np.ndarray, image_t1:np.ndarray, 
 
     ax1.imshow(image_flair) # visualize flair image
     ax1.set_title('Flair Image') # set title of a figure
+    ax1.axis('off') # set axis off
 
     ax2.imshow(image_t1) # visualize t1 image
     ax2.set_title('T1 Image') # set title of a figure
+    ax2.axis('off') # set axis off
 
     ax3.imshow(image_t1ce) # visualize t1ce image
     ax3.set_title('T1CE Image') # set title of a figure
+    ax3.axis('off') # set axis off
 
     ax4.imshow(image_t2) # visualize t2 image
     ax4.set_title('T2 Image') # set title of a figure
+    ax4.axis('off') # set axis off
 
     ax5.imshow(image_mask) # visualize mask image
     ax5.set_title('Mask Image') # set title of a figure
+    ax5.axis('off') # set axis off
 
     plt.show() # display the plots
 
@@ -250,8 +260,10 @@ def Z_Score_Normalization_forSingleSlice(trainset_path:str,image_name:str) -> No
 
     ax1.imshow(selected_image_data) # visualize an input image before applying z-score normalization
     ax1.set_title(f'Before applying z-score normalization \n {image_name}') # set figure title
+    ax1.axis('off') # set axis off
     ax2.imshow(normalized_data) # visualize an input image after applying z-score normalization
     ax2.set_title(f'After applying z-score normalization \n {image_name}') # set figure title
+    ax2.axis('off') # set axis off
     plt.show() # display the plots
 
     # PLOTING HISTOGRAM FOR CHECKING DISTRIBUTION OF DATA BEFORE Z-SCORE NOMALIZATION
@@ -288,9 +300,9 @@ def Z_Score_Normalization_forSingleSlice(trainset_path:str,image_name:str) -> No
     plt.title(f"Normal Distribution of Voxel Intensity Values After Z-score Normalization \n {image_name}") # set figure title
     plt.show() # display the plot
 
-def flipImageHorizontally(trainset_path:str,image_name:str,mask_name:str) -> None:
+def flipImageVertically(trainset_path:str,image_name:str,mask_name:str) -> None:
     """
-    This function is used to apply data augmentation modality i.e. Horizontal Flipping
+    This function is used to apply data augmentation modality i.e.Vertical Flipping
 
     Parameters:
     - trainset_path (str): training directory path
@@ -313,27 +325,31 @@ def flipImageHorizontally(trainset_path:str,image_name:str,mask_name:str) -> Non
     
     # PLOT ORIGINAL BACKGROUND IMAGE
     ax1.imshow(bg_img[56:184,56:184,95]) # visualize flair, t1, t1ce, t2 images only
-    ax1.set_title(f'Image before applying horizontal flip \n {image_name}') # set title for figure
+    ax1.set_title(f'Image before applying vertical flip \n {image_name}') # set title for figure
+    ax1.axis('off') # set axis off
 
     # PLOT FLIPPED BACKGROUND IMAGE
     ax2.imshow(flipped_horizontal_bg_img[56:184,56:184,95]) # visualize flair, t1, t1ce, t2 images only after applying flipping
-    ax2.set_title(f'Image after applying horizontal flip \n {image_name}') # set title for figure
+    ax2.set_title(f'Image after applying vertical flip \n {image_name}') # set title for figure
+    ax2.axis('off') # set axis off
 
     plt.subplots_adjust(hspace=0.5) # add white spce between two rows
 
     # PLOT ORIGINAL MASK IMAGE
     ax3.imshow(mask_img[56:184,56:184,95]) # visualize mask/seg image only
-    ax3.set_title(f'Mask/Seg Image before applying horizontal flip \n {image_name}') # set title for figure
+    ax3.set_title(f'Mask/Seg Image before applying vertical flip \n {image_name}') # set title for figure
+    ax3.axis('off') # set axis off
 
     # PLOT FLIPPED MASK IMAGE
     ax4.imshow(flipped_horizontal_mask_img[56:184,56:184,95]) # visualize mask/seg image only
-    ax4.set_title(f'Mask/Seg Image after applying horizontal flip \n {image_name}') # set title for figure
+    ax4.set_title(f'Mask/Seg Image after applying vertical flip \n {image_name}') # set title for figure
+    ax4.axis('off') # set axis off
 
     plt.show() # display the plots
 
-def flipImageVertically(trainset_path:str,image_name:str,mask_name:str) -> None:
+def flipImageHorizontally(trainset_path:str,image_name:str,mask_name:str) -> None:
     """
-    This function is used to apply data augmentation modality i.e. Vertical Flipping
+    This function is used to apply data augmentation modality i.e. Horizontal Flipping
 
     Parameters:
     - trainset_path (str): training directory path
@@ -354,21 +370,25 @@ def flipImageVertically(trainset_path:str,image_name:str,mask_name:str) -> None:
     
     # PLOT ORIGINAL BACKGROUND IMAGE
     ax1.imshow(bg_img[56:184,56:184,95]) # visualize flair, t1, t1ce, t2 images only
-    ax1.set_title(f'Image before applying vertical flip \n {image_name}') # set title for figure
+    ax1.set_title(f'Image before applying horizontal flip \n {image_name}') # set title for figure
+    ax1.axis('off') # set axis off
 
     # PLOT FLIPPED BACKGROUND IMAGE
     ax2.imshow(flipped_vertical_bg_img[56:184,56:184,95]) # visualize flair, t1, t1ce, t2 images only after applying flipping
-    ax2.set_title(f'Image after applying vertical flip \n {image_name}') # set title for figure
+    ax2.set_title(f'Image after applying horizontal flip \n {image_name}') # set title for figure
+    ax2.axis('off') # set axis off
 
     plt.subplots_adjust(hspace=0.5) # add white spce between two rows
 
     # PLOT ORIGINAL MASK IMAGE
     ax3.imshow(mask_img[56:184,56:184,95]) # visualize mask/seg image only
-    ax3.set_title(f'Mask/Seg Image before applying vertical flip \n {image_name}') # set title for figure
+    ax3.set_title(f'Mask/Seg Image before applying horizontal flip \n {image_name}') # set title for figure
+    ax3.axis('off') # set axis off
 
     # PLOT FLIPPED MASK IMAGE
     ax4.imshow(flipped_vertical_mask_img[56:184,56:184,95]) # visualize mask/seg image only after appklying flipping
-    ax4.set_title(f'Mask/Seg Image after applying vertical flip \n {image_name}') # set title for figure
+    ax4.set_title(f'Mask/Seg Image after applying horizontal flip \n {image_name}') # set title for figure
+    ax4.axis('off') # set axis off
 
     plt.show() # display the plots
 
@@ -436,35 +456,45 @@ def croppedImagePlot(image:np.ndarray,mask:np.ndarray, trainset_path:str, image_
 
     ax1.imshow(flair_image[:,:,95]) # visualize normal flair image
     ax1.set_title("Normal flair image") # set figure title
+    ax1.axis('off') # set axis off
 
     ax2.imshow(t1_image[:,:,95]) # visualize normal t1 image
     ax2.set_title("Normal t1 image") # set figure title
+    ax2.axis('off') # set axis off
 
     ax3.imshow(t1ce_image[:,:,95]) # visualize normal t1ce image
     ax3.set_title("Normal t1ce image") # set figure title
+    ax3.axis('off') # set axis off
 
     ax4.imshow(t2_image[:,:,95]) # visualize normal t2 image
     ax4.set_title("Normal t2 image") # set figure title
+    ax4.axis('off') # set axis off
 
     ax5.imshow(mask_image[:,:,95]) # visualize normal mask image
     ax5.set_title("Normal mask image") # set figure title
+    ax5.axis('off') # set axis off
 
     plt.subplots_adjust(hspace=0.5) # add white space between two rows
 
     ax6.imshow(image[:,:,82,0]) # visualize cropped flair image
     ax6.set_title("Cropped flair image") # set figure title
+    ax6.axis('off') # set axis off
 
     ax7.imshow(image[:,:,82,1]) # visualize cropped t1 image
     ax7.set_title("Cropped t1 image") # set figure title
+    ax7.axis('off') # set axis off
 
     ax8.imshow(image[:,:,82,2]) # visualize cropped t1ce image
     ax8.set_title("Cropped t1ce image") # set figure title
+    ax8.axis('off') # set axis off
 
     ax9.imshow(image[:,:,82,3]) # visualize cropped t2 image
     ax9.set_title("Cropped t2 image") # set figure title
+    ax9.axis('off') # set axis off
 
     ax10.imshow(mask[:,:,82]) # visualize cropped mask image
     ax10.set_title("Cropped mask image") # set figure title
+    ax10.axis('off') # set axis off
 
     plt.show() # display the plots
 
